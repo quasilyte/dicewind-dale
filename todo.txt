@@ -1,0 +1,43 @@
+- enable skills
++ front attack monster doesn't move in this layout:
+
+character progression:
+* levels
+  * new skills
+  * class skill upgrades
+* secondary skills
+* items
+* gold
+
+secondary skills:
+* disarm trap
+* search
+* lockpicking
+
+monster behavior in battle:
+* monster rolls 1d6 to select the action
+* when selected action is not available, it falls back to attack
+* monster rolls 1d6, selects the closest target; in case of equidistance, selects the one with less hp
+* if monster can't reach the target, it moves
+
+player turn in battle:
+* can move 1 tile on its side
+* can attack
+* can guard
+* can use skill
+* can use item (some of them do not end the turn)
+
+guard:
+* adds 1 universal damage reduction (doesn't work against effects like poison)
+
+battle system:
+*
+
+tiles:
+* boss room (revealed from the start)
+* monster encounter
+* treasure chest
+* safe spot (can rest)
+* double event
+* shop root
+* shrine room
