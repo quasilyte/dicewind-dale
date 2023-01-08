@@ -8,13 +8,13 @@ type Event interface {
 
 type UnitMoveEvent struct {
 	Unit *Unit
-	From TilePos
-	To   TilePos
+	From ruleset.TilePos
+	To   ruleset.TilePos
 }
 
 type UnitSkillCastEvent struct {
 	Caster *Unit
-	Target TilePos
+	Target ruleset.TilePos
 	Skill  *ruleset.Skill
 }
 

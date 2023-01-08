@@ -7,7 +7,7 @@ import (
 
 func registerFonts(ctx *ge.Context) {
 	fontResources := map[resource.FontID]resource.Font{
-		FontVeryTiny: {Path: "font/Fiolex_Mephisto.otf", Size: 14},
+		FontVeryTiny: {Path: "font/Fiolex_Mephisto.otf", Size: 13},
 		FontTiny:     {Path: "font/Fiolex_Mephisto.otf", Size: 18},
 		FontSmall:    {Path: "font/Fiolex_Mephisto.otf", Size: 24},
 	}

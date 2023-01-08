@@ -17,6 +17,8 @@ var (
 )
 
 type tileSelectionAuraNode struct {
+	TilePos ruleset.TilePos
+
 	pos gmath.Vec
 
 	rand *gmath.Rand
@@ -27,8 +29,11 @@ type tileSelectionAuraNode struct {
 	Rect   gmath.Rect
 }
 
-func newTileSelectionAuraNode(pos gmath.Vec) *tileSelectionAuraNode {
-	return &tileSelectionAuraNode{pos: pos}
+func newTileSelectionAuraNode(tilePos ruleset.TilePos, pos gmath.Vec) *tileSelectionAuraNode {
+	return &tileSelectionAuraNode{
+		TilePos: tilePos,
+		pos:     pos,
+	}
 }
 
 func (a *tileSelectionAuraNode) Init(scene *ge.Scene) {

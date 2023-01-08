@@ -20,7 +20,7 @@ var HeroClassList = []*HeroClass{
 		Name:      "Warrior",
 		CardImage: assets.ImageHeroWarriorCard,
 		HP:        6,
-		MP:        2,
+		MP:        3,
 		Masteries: []MasteryKind{
 			MasterySword,
 		},
@@ -30,7 +30,7 @@ var HeroClassList = []*HeroClass{
 		Name:      "Sorcerer",
 		CardImage: assets.ImageHeroSorcererCard,
 		HP:        3,
-		MP:        5,
+		MP:        7,
 		Masteries: []MasteryKind{
 			MasteryStaff,
 		},

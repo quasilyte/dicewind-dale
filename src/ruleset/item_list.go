@@ -17,7 +17,16 @@ var WeaponList = []*HeroWeaponClass{
 		Level:   1,
 		Kind:    WeaponSword,
 		Mastery: MasterySword,
-		Damage:  DamageRange{0, 1, 2, 2, 2, 2},
+		Damage:  DamageRange{0, 1, 1, 1, 2, 3},
+		Reach:   ReachMelee,
+	},
+
+	{
+		Name:    "Scimitar",
+		Level:   1,
+		Kind:    WeaponScimitar,
+		Mastery: MasterySword,
+		Damage:  DamageRange{0, 0, 1, 2, 2, 3},
 		Reach:   ReachMelee,
 	},
 

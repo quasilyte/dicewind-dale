@@ -30,6 +30,8 @@ func registerImages(ctx *ge.Context) {
 		ImageTileSelectionAura: {Path: "image/tile_selection_aura.png"},
 		ImageSkillBorder:       {Path: "image/skill_border.png"},
 
+		ImageSkillTrueStrike:      {Path: "image/skill/true_strike.png"},
+		ImageSkillConsumePoison:   {Path: "image/skill/consume_poison.png"},
 		ImageSkillSummonSkeleton:  {Path: "image/skill/summon_skeleton.png"},
 		ImageSkillIconFlameStrike: {Path: "image/skill/flame_strike.png"},
 		ImageSkillIconFireball:    {Path: "image/skill/fireball.png"},
@@ -49,12 +51,14 @@ func registerImages(ctx *ge.Context) {
 		ImageHealthCost:  {Path: "image/health_cost.png"},
 		ImageEnergyCost:  {Path: "image/energy_cost.png"},
 
-		ImageAcidSlingExplosion: {Path: "image/acid_sling_explosion.png", FrameWidth: 156},
-		ImagePoisonExplosion:    {Path: "image/poison_explosion.png", FrameWidth: 128},
-		ImageHellfireExplosion:  {Path: "image/hellfire_explosion.png", FrameWidth: 120},
-		ImageFireExplosion:      {Path: "image/fire_explosion.png", FrameWidth: 120},
-		ImageDarkBoltExplosion:  {Path: "image/dark_bolt_explosion.png", FrameWidth: 64},
-		ImageFlameStrike:        {Path: "image/flame_strike.png", FrameWidth: 128},
+		ImageTrueStrike:              {Path: "image/true_strike.png", FrameWidth: 96},
+		ImageAcidSlingExplosion:      {Path: "image/acid_sling_explosion.png", FrameWidth: 156},
+		ImagePoisonExplosion:         {Path: "image/poison_explosion.png", FrameWidth: 128},
+		ImagePoisonExplosionReversed: {Path: "image/poison_explosion_reversed.png", FrameWidth: 128},
+		ImageHellfireExplosion:       {Path: "image/hellfire_explosion.png", FrameWidth: 120},
+		ImageFireExplosion:           {Path: "image/fire_explosion.png", FrameWidth: 120},
+		ImageDarkBoltExplosion:       {Path: "image/dark_bolt_explosion.png", FrameWidth: 64},
+		ImageFlameStrike:             {Path: "image/flame_strike.png", FrameWidth: 128},
 	}
 
 	for id, res := range imageResources {
@@ -89,6 +93,8 @@ const (
 	ImageTileSelectionAura
 	ImageSkillBorder
 
+	ImageSkillTrueStrike
+	ImageSkillConsumePoison
 	ImageSkillSummonSkeleton
 	ImageSkillIconFlameStrike
 	ImageSkillIconFireball
@@ -108,8 +114,10 @@ const (
 	ImageHealthCost
 	ImageEnergyCost
 
+	ImageTrueStrike
 	ImageAcidSlingExplosion
 	ImagePoisonExplosion
+	ImagePoisonExplosionReversed
 	ImageFireExplosion
 	ImageHellfireExplosion
 	ImageDarkBoltExplosion

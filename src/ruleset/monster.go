@@ -20,7 +20,7 @@ const (
 type Action struct {
 	Kind    ActionKind
 	SubKind int
-	Value   int
+	Pos     TilePos
 }
 
 type Race int

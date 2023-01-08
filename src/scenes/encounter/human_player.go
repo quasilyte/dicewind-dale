@@ -17,7 +17,7 @@ type humanPlayer struct {
 	calc  *battle.Calculator
 	board *battle.Board
 
-	tileSelections [2][6]*tileSelectionAuraNode
+	tileSelections [2 * 6]*tileSelectionAuraNode
 	skillSlots     []*skillSlotNode
 	skillTargeting int
 	skillSelection *selectionAuraNode
@@ -40,13 +40,12 @@ func newHumanPlayer(h *input.Handler, calc *battle.Calculator, board *battle.Boa
 }
 
 func (p *humanPlayer) Init(scene *ge.Scene) {
-	for alliance := 0; alliance < 2; alliance++ {
-		for pos := battle.TilePos(0); pos < 6; pos++ {
-			a := newTileSelectionAuraNode(p.board.Tiles[alliance][pos].Pos)
-			p.tileSelections[alliance][pos] = a
-			scene.AddObjectBelow(a, 1)
-		}
-	}
+	p.board.WalkTiles(func(t *battle.Tile) bool {
+		a := newTileSelectionAuraNode(t.TilePos, t.Pos)
+		p.tileSelections[t.TilePos.GlobalIndex()] = a
+		scene.AddObjectBelow(a, 1)
+		return true
+	})
 
 	p.skillSelection = newSelectionAuraNode()
 	scene.AddObjectAbove(p.skillSelection, 1)
@@ -88,30 +87,27 @@ func (p *humanPlayer) handleInput() {
 		return
 	}
 
-	for alliance := 0; alliance < 2; alliance++ {
-		for pos := battle.TilePos(0); pos < 6; pos++ {
-			tile := p.tileSelections[alliance][pos]
-			if tile.Action == ruleset.ActionNone {
-				continue
-			}
-			if !tile.Rect.Contains(cursorPos) {
-				continue
-			}
-
-			a := ruleset.Action{Kind: tile.Action}
-			switch tile.Action {
-			case ruleset.ActionMove, ruleset.ActionAttack:
-				a.Value = int(pos)
-			case ruleset.ActionSkill:
-				a.Value = int(pos)
-				a.SubKind = p.skillTargeting
-			case ruleset.ActionGuard:
-				// Do nothing.
-			}
-			p.actions = append(p.actions, a)
-			p.sendActions()
-			return
+	for _, tile := range p.tileSelections {
+		if tile.Action == ruleset.ActionNone {
+			continue
 		}
+		if !tile.Rect.Contains(cursorPos) {
+			continue
+		}
+
+		a := ruleset.Action{Kind: tile.Action}
+		switch tile.Action {
+		case ruleset.ActionMove, ruleset.ActionAttack:
+			a.Pos = tile.TilePos
+		case ruleset.ActionSkill:
+			a.Pos = tile.TilePos
+			a.SubKind = p.skillTargeting
+		case ruleset.ActionGuard:
+			// Do nothing.
+		}
+		p.actions = append(p.actions, a)
+		p.sendActions()
+		return
 	}
 }
 
@@ -127,12 +123,10 @@ func (p *humanPlayer) sendActions() {
 
 	p.skillSelection.SetVisibility(false)
 
-	for alliance := 0; alliance < 2; alliance++ {
-		for pos := battle.TilePos(0); pos < 6; pos++ {
-			tile := p.tileSelections[alliance][pos]
-			tile.SetVisibility(false)
-		}
+	for _, tile := range p.tileSelections {
+		tile.SetVisibility(false)
 	}
+
 	for _, slot := range p.skillSlots {
 		slot.SetSkill(nil)
 	}
@@ -164,25 +158,23 @@ func (p *humanPlayer) updateTiles() {
 		p.skillSelection.Pos = p.skillSlots[p.skillTargeting].pos
 	}
 
-	for alliance := 0; alliance < 2; alliance++ {
-		for pos := battle.TilePos(0); pos < 6; pos++ {
-			tile := p.tileSelections[alliance][pos]
-			tile.SetVisibility(false)
-			tile.Action = ruleset.ActionNone
-			if p.skillTargeting == -1 {
-				p.updateNormalTile(tile, alliance, pos)
-			} else {
-				p.updateSkillTile(tile, alliance, pos)
-			}
+	for _, tile := range p.tileSelections {
+		tile.SetVisibility(false)
+		tile.Action = ruleset.ActionNone
+		if p.skillTargeting == -1 {
+			p.updateNormalTile(tile)
+		} else {
+			p.updateSkillTile(tile)
 		}
 	}
 }
 
-func (p *humanPlayer) updateSkillTile(tile *tileSelectionAuraNode, alliance int, pos battle.TilePos) {
+func (p *humanPlayer) updateSkillTile(tile *tileSelectionAuraNode) {
+	pos := tile.TilePos
 	skill := p.skillSlots[p.skillTargeting].Skill
-	ok := (skill.CanTargetAlliedTile() && p.unit.Alliance == alliance) ||
-		(skill.CanTargetEnemyTile() && p.unit.Alliance != alliance) ||
-		(skill.TargetKind == ruleset.TargetEmptyAllied && p.unit.Alliance == alliance)
+	ok := (skill.CanTargetAlliedTile() && p.unit.Alliance == pos.Alliance) ||
+		(skill.CanTargetEnemyTile() && p.unit.Alliance != pos.Alliance) ||
+		(skill.TargetKind == ruleset.TargetEmptyAllied && p.unit.Alliance == pos.Alliance)
 	if !ok {
 		return
 	}
@@ -192,10 +184,11 @@ func (p *humanPlayer) updateSkillTile(tile *tileSelectionAuraNode, alliance int,
 	}
 }
 
-func (p *humanPlayer) updateNormalTile(tile *tileSelectionAuraNode, alliance int, pos battle.TilePos) {
+func (p *humanPlayer) updateNormalTile(tile *tileSelectionAuraNode) {
+	pos := tile.TilePos
 	u := p.unit
-	if alliance == u.Alliance {
-		if p.board.Tiles[alliance][pos].Unit == nil {
+	if pos.Alliance == u.Alliance {
+		if p.board.Tiles[pos.GlobalIndex()].Unit == nil {
 			tile.SetVisibility(true)
 			tile.SetAction(ruleset.ActionMove)
 		} else if pos == u.TilePos {
@@ -204,7 +197,7 @@ func (p *humanPlayer) updateNormalTile(tile *tileSelectionAuraNode, alliance int
 		}
 		return
 	}
-	if p.board.Tiles[alliance][pos].Unit != nil && p.calc.CanAttackPos(u, u.TilePos, pos) {
+	if p.board.Tiles[pos.GlobalIndex()].Unit != nil && p.calc.CanAttackPos(u, u.TilePos, pos) {
 		tile.SetVisibility(true)
 		tile.SetAction(ruleset.ActionAttack)
 	}

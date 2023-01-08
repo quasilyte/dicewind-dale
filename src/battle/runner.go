@@ -57,7 +57,7 @@ func (r *Runner) checkVictory() {
 	r.board.WalkUnits(func(u *Unit) bool {
 		if u.HP <= 0 {
 			r.postEvents = append(r.postEvents, &UnitDefeatedEvent{Unit: u})
-			r.board.Tiles[u.Alliance][u.TilePos].Unit = nil
+			r.board.Tiles[u.TilePos.GlobalIndex()].Unit = nil
 			return true
 		}
 		units[u.Alliance]++
@@ -75,22 +75,29 @@ func (r *Runner) checkVictory() {
 	}
 }
 
-func (r *Runner) applySkillEffects(u *Unit, skill *ruleset.Skill, skillValue int) {
-	var target *Unit
-	switch skill.TargetKind {
-	case ruleset.TargetEnemyAny, ruleset.TargetEnemyMelee, ruleset.TargetEnemySpear:
-		target = r.board.Tiles[u.EnemyAlliance()][skillValue].Unit
-	}
+func (r *Runner) applySkillEffects(u *Unit, skill *ruleset.Skill, pos ruleset.TilePos) {
+	target := r.board.Tiles[pos.GlobalIndex()].Unit
+
+	rollBonus := 0
 
 	for _, e := range skill.TargetEffects {
 		switch e.Kind {
+		case ruleset.EffectRollBonus:
+			rollBonus += e.Value.(int)
 		case ruleset.EffectPoison:
 			target.Poison = gmath.ClampMax(target.Poison+e.Value.(int), ruleset.MaxPoison)
+		case ruleset.EffectAttack:
+			damage := r.calc.AttackDamage(u, rollBonus)
+			r.applyDamage(u, ruleset.SourcePhysical, damage, pos)
 		case ruleset.EffectDamage:
 			damage := r.calc.SkillDamage(u, skill, e)
 			r.applyDamage(u, e.Source, damage, target.TilePos)
 		case ruleset.EffectSummonSkeleton:
-			r.board.AddUnit(NewMonsterUnit(u.Alliance, ruleset.MonsterByName("Skeleton")), TilePos(skillValue))
+			r.board.AddUnit(NewMonsterUnit(u.Alliance, ruleset.MonsterByName("Skeleton")), pos)
+		case ruleset.EffectPoisonToHealth:
+			cured := gmath.ClampMax(e.Value.(int), target.Poison)
+			target.HP = gmath.ClampMax(target.HP+cured, target.MaxHP())
+			target.Poison -= cured
 		default:
 			panic("unexpected skill effect kind")
 		}
@@ -101,15 +108,6 @@ func (r *Runner) applyActions(actions []ruleset.Action) {
 	u := r.unit
 
 	u.Guarding = false
-	if u.Poison > 0 {
-		u.Poison--
-		u.HP--
-		r.postEvents = append(r.postEvents, &UnitDamagedEvent{
-			Unit:     u,
-			Damage:   1,
-			IsPoison: true,
-		})
-	}
 
 	for _, a := range actions {
 		switch a.Kind {
@@ -117,31 +115,31 @@ func (r *Runner) applyActions(actions []ruleset.Action) {
 			skill := u.Skill(a.SubKind)
 			r.events = append(r.events, &UnitSkillCastEvent{
 				Caster: u,
-				Target: TilePos(a.Value),
+				Target: a.Pos,
 				Skill:  skill,
 			})
 			u.MP -= skill.EnergyCost
 			u.HP -= skill.HealthCost
-			r.applySkillEffects(u, skill, a.Value)
+			r.applySkillEffects(u, skill, a.Pos)
 
 		case ruleset.ActionMove:
 			r.events = append(r.events, &UnitMoveEvent{
 				Unit: u,
 				From: u.TilePos,
-				To:   TilePos(a.Value),
+				To:   a.Pos,
 			})
-			r.board.Tiles[u.Alliance][u.TilePos].Unit = nil
-			u.TilePos = TilePos(a.Value)
-			r.board.Tiles[u.Alliance][a.Value].Unit = u
+			r.board.Tiles[u.TilePos.GlobalIndex()].Unit = nil
+			u.TilePos = a.Pos
+			r.board.Tiles[a.Pos.GlobalIndex()].Unit = u
 
 		case ruleset.ActionAttack:
-			target := r.board.Tiles[u.EnemyAlliance()][a.Value].Unit
+			target := r.board.Tiles[a.Pos.GlobalIndex()].Unit
 			r.events = append(r.events, &UnitAttackEvent{
 				Attacker: u,
 				Defender: target,
 			})
-			damage := r.calc.AttackDamage(u)
-			r.applyDamage(u, ruleset.SourcePhysical, damage, TilePos(a.Value))
+			damage := r.calc.AttackDamage(u, 0)
+			r.applyDamage(u, ruleset.SourcePhysical, damage, a.Pos)
 
 		case ruleset.ActionGuard:
 			u.Guarding = true
@@ -151,10 +149,20 @@ func (r *Runner) applyActions(actions []ruleset.Action) {
 			panic(fmt.Sprintf("unhandled %s action", a.Kind))
 		}
 	}
+
+	if u.Poison > 0 {
+		u.Poison--
+		u.HP--
+		r.postEvents = append(r.postEvents, &UnitDamagedEvent{
+			Unit:     u,
+			Damage:   1,
+			IsPoison: true,
+		})
+	}
 }
 
-func (r *Runner) applyDamage(u *Unit, damageKind ruleset.EffectSource, damage int, pos TilePos) {
-	target := r.board.Tiles[u.EnemyAlliance()][pos].Unit
+func (r *Runner) applyDamage(u *Unit, damageKind ruleset.EffectSource, damage int, pos ruleset.TilePos) {
+	target := r.board.Tiles[pos.GlobalIndex()].Unit
 	if target.Guarding && damageKind == ruleset.SourcePhysical {
 		damage -= 1
 	}
@@ -185,7 +193,7 @@ func (r *Runner) buildTurnQueue() {
 		indexes := unitIndexMapping[i]
 		alliance := indexes[0]
 		pos := indexes[1]
-		tile := r.board.Tiles[alliance][pos]
+		tile := r.board.GetTile(alliance, pos)
 		if tile.Unit != nil {
 			r.turnQueue = append(r.turnQueue, tile.Unit)
 		}

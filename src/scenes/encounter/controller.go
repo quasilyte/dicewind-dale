@@ -35,7 +35,7 @@ type Controller struct {
 }
 
 type boardNodes struct {
-	tiles [2][6]*unitTileNode
+	tiles [2 * 6]*unitTileNode
 }
 
 func NewController(state *session.State) *Controller {
@@ -55,6 +55,10 @@ func (c *Controller) Init(scene *ge.Scene) {
 		Weapon: &ruleset.HeroWeapon{
 			Class: ruleset.WeaponByName("Sword"),
 		},
+		CurrentSkills: []*ruleset.Skill{
+			ruleset.SkillByName("True Strike"),
+			ruleset.SkillByName("Consume Poison"),
+		},
 	}
 	sorcHero := &ruleset.Hero{
 		Name:      "Beta",
@@ -73,15 +77,14 @@ func (c *Controller) Init(scene *ge.Scene) {
 	}
 
 	c.board = battle.NewBoard()
-	c.board.AddUnit(battle.NewHeroUnit(0, sorcHero), 4)
-	c.board.AddUnit(battle.NewHeroUnit(0, warriorHero), 0)
-	// c.board.AddUnit(battle.NewMonsterUnit(0, ruleset.MonsterByName("Grey Minion")), 1)
-	// c.board.AddUnit(battle.NewMonsterUnit(0, ruleset.MonsterByName("Brute")), 2)
-	c.board.AddUnit(battle.NewMonsterUnit(1, ruleset.MonsterByName("Grey Minion Archer")), 3)
-	// c.board.AddUnit(battle.NewMonsterUnit(1, ruleset.MonsterByName("Grey Minion Archer")), 4)
-	c.board.AddUnit(battle.NewMonsterUnit(1, ruleset.MonsterByName("Darkspawn")), 1)
-	c.board.AddUnit(battle.NewMonsterUnit(1, ruleset.MonsterByName("Grey Minion")), 2)
-	c.board.AddUnit(battle.NewMonsterUnit(1, ruleset.MonsterByName("Lurking Terror")), 0)
+
+	c.board.AddUnit(battle.NewHeroUnit(0, sorcHero), ruleset.TilePos{Alliance: 0, Index: 4})
+	c.board.AddUnit(battle.NewHeroUnit(0, warriorHero), ruleset.TilePos{Alliance: 0, Index: 0})
+
+	c.board.AddUnit(battle.NewMonsterUnit(1, ruleset.MonsterByName("Grey Minion Archer")), ruleset.TilePos{Alliance: 1, Index: 3})
+	c.board.AddUnit(battle.NewMonsterUnit(1, ruleset.MonsterByName("Darkspawn")), ruleset.TilePos{Alliance: 1, Index: 1})
+	c.board.AddUnit(battle.NewMonsterUnit(1, ruleset.MonsterByName("Grey Minion")), ruleset.TilePos{Alliance: 1, Index: 2})
+	c.board.AddUnit(battle.NewMonsterUnit(1, ruleset.MonsterByName("Lurking Terror")), ruleset.TilePos{Alliance: 1, Index: 0})
 
 	c.dice = ruleset.NewDice(scene.Rand(), os.Stdout)
 	c.calc = battle.NewCalculator(c.dice, c.board)
@@ -195,15 +198,13 @@ func (c *Controller) startNextUnitTurn(u *battle.Unit, delay float64) {
 }
 
 func (c *Controller) updateUnitTiles() {
-	for alliance := 0; alliance < 2; alliance++ {
-		for pos := battle.TilePos(0); pos < 6; pos++ {
-			u := c.board.Tiles[alliance][pos].Unit
-			c.nodes.tiles[alliance][pos].SetUnit(u)
-			if u != nil {
-				u.Pos = c.nodes.tiles[alliance][pos].body.Pos
-			}
+	c.board.WalkTiles(func(t *battle.Tile) bool {
+		c.nodes.tiles[t.TilePos.GlobalIndex()].SetUnit(t.Unit)
+		if t.Unit != nil {
+			t.Unit.Pos = c.nodes.tiles[t.TilePos.GlobalIndex()].body.Pos
 		}
-	}
+		return true
+	})
 }
 
 func (c *Controller) initUI() {
@@ -211,34 +212,33 @@ func (c *Controller) initUI() {
 	bg.Centered = false
 	c.scene.AddGraphicsBelow(bg, 1)
 
-	for alliance := 0; alliance < 2; alliance++ {
-		for pos := battle.TilePos(0); pos < 6; pos++ {
-			offset := c.calcUnitPos(alliance, pos)
-			n := newUnitTileNode(offset, alliance, pos)
-			c.scene.AddObject(n)
-			c.nodes.tiles[alliance][pos] = n
-			c.board.Tiles[alliance][pos].Pos = n.body.Pos
-		}
-	}
+	c.board.WalkTiles(func(t *battle.Tile) bool {
+		offset := c.calcUnitPos(t.TilePos)
+		n := newUnitTileNode(offset, t.TilePos)
+		c.scene.AddObject(n)
+		c.nodes.tiles[t.TilePos.GlobalIndex()] = n
+		c.board.Tiles[t.TilePos.GlobalIndex()].Pos = n.body.Pos
+		return true
+	})
 
 	c.updateUnitTiles()
 }
 
-func (c *Controller) calcUnitPos(alliance int, pos battle.TilePos) gmath.Vec {
-	col := float64(pos)
+func (c *Controller) calcUnitPos(pos ruleset.TilePos) gmath.Vec {
+	col := float64(pos.Index)
 	row := 0.0
 	if pos.IsBackRow() {
 		col -= 3
-		if alliance == 1 {
+		if pos.Alliance == 1 {
 			row = 1
 		}
 	} else {
-		if alliance == 0 {
+		if pos.Alliance == 0 {
 			row = 1
 		}
 	}
 	extraOffset := gmath.Vec{}
-	if alliance == 1 {
+	if pos.Alliance == 1 {
 		extraOffset.Y = (456 + 16) + (col * 32)
 	} else {
 		extraOffset.Y = -(col * 32)

@@ -66,17 +66,22 @@ type EffectKind int
 const (
 	EffectNone EffectKind = iota
 	EffectDamage
+	EffectAttack
+	EffectRollBonus
 	EffectPoison
 	EffectManaBurn
 	EffectWeakness
 	EffectStun
 	EffectSummonSkeleton
+	EffectPoisonToHealth
 )
 
 type TargetKind int
 
 const (
 	TargetNone TargetKind = iota
+	TargetSelf
+	TargetAttackCandidate
 	TargetEnemyAny
 	TargetEnemyMelee
 	TargetEnemySpear
@@ -96,7 +101,7 @@ type Skill struct {
 
 func (s *Skill) CanTargetEnemyTile() bool {
 	switch s.TargetKind {
-	case TargetEnemyAny, TargetEnemyMelee, TargetEnemySpear:
+	case TargetEnemyAny, TargetEnemyMelee, TargetEnemySpear, TargetAttackCandidate:
 		return true
 	default:
 		return false
@@ -104,7 +109,12 @@ func (s *Skill) CanTargetEnemyTile() bool {
 }
 
 func (s *Skill) CanTargetAlliedTile() bool {
-	return false
+	switch s.TargetKind {
+	case TargetEmptyAllied, TargetSelf:
+		return true
+	default:
+		return false
+	}
 }
 
 func SkillByName(name string) *Skill {
@@ -117,6 +127,41 @@ func SkillByName(name string) *Skill {
 }
 
 var SkillList = []*Skill{
+	{
+		Name:            "True Strike",
+		Icon:            assets.ImageSkillTrueStrike,
+		ImpactAnimation: assets.ImageTrueStrike,
+		CastSound:       assets.AudioScimitarAttack,
+		EnergyCost:      1,
+		TargetKind:      TargetAttackCandidate,
+		TargetEffects: []Effect{
+			{
+				Kind:  EffectRollBonus,
+				Value: 2,
+			},
+			{
+				Kind:   EffectAttack,
+				Source: SourcePhysical,
+			},
+		},
+	},
+
+	{
+		Name:            "Consume Poison",
+		Icon:            assets.ImageSkillConsumePoison,
+		ImpactAnimation: assets.ImagePoisonExplosionReversed,
+		CastSound:       assets.AudioPoisonExplosion,
+		EnergyCost:      2,
+		TargetKind:      TargetSelf,
+		TargetEffects: []Effect{
+			{
+				Kind:   EffectPoisonToHealth,
+				Source: SourcePhysical,
+				Value:  2,
+			},
+		},
+	},
+
 	{
 		Name:            "Summon Skeleton",
 		Icon:            assets.ImageSkillSummonSkeleton,
@@ -153,7 +198,7 @@ var SkillList = []*Skill{
 		Icon:            assets.ImageSkillIconFireball,
 		ImpactAnimation: assets.ImageFireExplosion,
 		CastSound:       assets.AudioFireExplosion,
-		EnergyCost:      2,
+		EnergyCost:      3,
 		TargetKind:      TargetEnemyAny,
 		TargetEffects: []Effect{
 			{
@@ -169,7 +214,7 @@ var SkillList = []*Skill{
 		Icon:            assets.ImageSkillIconHellfire,
 		ImpactAnimation: assets.ImageHellfireExplosion,
 		CastSound:       assets.AudioFireExplosion,
-		EnergyCost:      1,
+		EnergyCost:      2,
 		HealthCost:      1,
 		TargetKind:      TargetEnemySpear,
 		TargetEffects: []Effect{

@@ -15,8 +15,7 @@ type unitTileNode struct {
 
 	scene *ge.Scene
 
-	alliance int
-	tilePos  battle.TilePos
+	tilePos ruleset.TilePos
 
 	unit *battle.Unit
 
@@ -37,10 +36,9 @@ type unitTileNode struct {
 	EventAnimationCompleted gesignal.Event[gesignal.Void]
 }
 
-func newUnitTileNode(pos gmath.Vec, alliance int, tilePos battle.TilePos) *unitTileNode {
+func newUnitTileNode(pos gmath.Vec, tilePos ruleset.TilePos) *unitTileNode {
 	n := &unitTileNode{
-		alliance: alliance,
-		tilePos:  tilePos,
+		tilePos: tilePos,
 	}
 	n.body.Pos = pos
 	return n

@@ -66,12 +66,7 @@ func (r *eventsRunner) runEvent(e battle.Event) {
 		r.active = true
 
 	case *battle.UnitSkillCastEvent:
-		// TODO: fix it when we transit to a single pos instead of alliance+pos.
-		alliance := e.Caster.Alliance
-		if e.Skill.CanTargetEnemyTile() {
-			alliance = e.Caster.EnemyAlliance()
-		}
-		targetNode := r.nodes.tiles[alliance][e.Target]
+		targetNode := r.nodes.tiles[e.Target.GlobalIndex()]
 		r2 := newSkillCastRunner(e, targetNode.body.Pos)
 		r2.EventCompleted.Connect(r, r.subEventCompleted)
 		r.scene.AddObject(r2)
@@ -87,13 +82,13 @@ func (r *eventsRunner) runEvent(e battle.Event) {
 		r.scene.AddObject(r2)
 
 	case *battle.UnitDefeatedEvent:
-		n := r.nodes.tiles[e.Unit.Alliance][e.Unit.TilePos]
+		n := r.nodes.tiles[e.Unit.TilePos.GlobalIndex()]
 		gesignal.ConnectOneShot(&n.EventAnimationCompleted, nil, r.subEventCompleted)
 		n.PlayUnitDefeat()
 
 	case *battle.UnitMoveEvent:
-		srcNode := r.nodes.tiles[e.Unit.Alliance][e.From]
-		dstNode := r.nodes.tiles[e.Unit.Alliance][e.To]
+		srcNode := r.nodes.tiles[e.From.GlobalIndex()]
+		dstNode := r.nodes.tiles[e.To.GlobalIndex()]
 		r2 := newMoveRunner(e, srcNode.body.Pos, dstNode.body.Pos, e.Unit.CardImage())
 		r2.EventCompleted.Connect(r, r.subEventCompleted)
 		r.scene.AddObject(r2)

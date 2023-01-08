@@ -8,7 +8,7 @@ import (
 )
 
 type Unit struct {
-	Alliance int
+	Alliance uint8
 
 	HP     int
 	MP     int
@@ -17,14 +17,14 @@ type Unit struct {
 	HumanControlled bool
 	Guarding        bool
 
-	TilePos TilePos
+	TilePos ruleset.TilePos
 	Pos     gmath.Vec
 
 	Monster *ruleset.Monster
 	Hero    *ruleset.Hero
 }
 
-func NewHeroUnit(alliance int, h *ruleset.Hero) *Unit {
+func NewHeroUnit(alliance uint8, h *ruleset.Hero) *Unit {
 	return &Unit{
 		Alliance:        alliance,
 		Hero:            h,
@@ -34,7 +34,7 @@ func NewHeroUnit(alliance int, h *ruleset.Hero) *Unit {
 	}
 }
 
-func NewMonsterUnit(alliance int, m *ruleset.Monster) *Unit {
+func NewMonsterUnit(alliance uint8, m *ruleset.Monster) *Unit {
 	return &Unit{
 		Alliance:        alliance,
 		Monster:         m,
@@ -43,11 +43,18 @@ func NewMonsterUnit(alliance int, m *ruleset.Monster) *Unit {
 	}
 }
 
-func (u *Unit) EnemyAlliance() int {
+func (u *Unit) EnemyAlliance() uint8 {
 	if u.Alliance == 0 {
 		return 1
 	}
 	return 0
+}
+
+func (u *Unit) MaxHP() int {
+	if u.Monster != nil {
+		return u.Monster.HP
+	}
+	return u.Hero.Class.HP
 }
 
 func (u *Unit) IsMonster() bool {
@@ -59,6 +66,13 @@ func (u *Unit) Skills() []*ruleset.Skill {
 		return u.Monster.Skills
 	}
 	return u.Hero.CurrentSkills
+}
+
+func (u *Unit) AttackReach() ruleset.AttackReach {
+	if u.Monster != nil {
+		return u.Monster.Reach
+	}
+	return u.Hero.Weapon.Class.Reach
 }
 
 func (u *Unit) WeaponKind() ruleset.WeaponKind {

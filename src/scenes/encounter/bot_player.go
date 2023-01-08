@@ -60,26 +60,19 @@ func (p *botPlayer) getActions(u *battle.Unit) []ruleset.Action {
 	return []ruleset.Action{a}
 }
 
-func (p *botPlayer) attackFront(u *battle.Unit, reachBack bool) (battle.TilePos, bool) {
-	enemyTiles := &p.board.Tiles[u.EnemyAlliance()]
-	attackPos := u.TilePos
-	if u.TilePos.IsBackRow() {
-		attackPos -= 3
-	}
-	if enemyTiles[attackPos].Unit != nil {
+func (p *botPlayer) attackFront(u *battle.Unit, reachBack bool) (ruleset.TilePos, bool) {
+	attackPos := u.TilePos.OtherAlliance().FrontRow()
+	if p.board.Tiles[attackPos.GlobalIndex()].Unit != nil {
 		return attackPos, true
 	}
 	// Can we attack the back row?
-	if (reachBack || !p.calc.HasMeleeUnits(u.EnemyAlliance())) && enemyTiles[attackPos+3].Unit != nil {
-		return attackPos + 3, true
+	if (reachBack || !p.calc.HasMeleeUnits(u.EnemyAlliance())) && p.board.Tiles[attackPos.BackRow().GlobalIndex()].Unit != nil {
+		return attackPos.BackRow(), true
 	}
-	return 0, false
+	return ruleset.TilePos{}, false
 }
 
 func (p *botPlayer) adjustAction(u *battle.Unit, a ruleset.Action) ruleset.Action {
-	alliedTiles := &p.board.Tiles[u.Alliance]
-	enemyTiles := &p.board.Tiles[u.EnemyAlliance()]
-
 	switch a.Kind {
 	case ruleset.ActionGuard:
 		// Nothing to do.
@@ -90,7 +83,7 @@ func (p *botPlayer) adjustAction(u *battle.Unit, a ruleset.Action) ruleset.Actio
 		case ruleset.TargetEnemyAny:
 			attackPos, ok := p.findAttackTarget(u, ruleset.ReachRanged)
 			if ok {
-				a.Value = int(attackPos)
+				a.Pos = attackPos
 				break
 			}
 			return p.adjustAction(u, ruleset.Action{Kind: ruleset.ActionAttack})
@@ -98,7 +91,7 @@ func (p *botPlayer) adjustAction(u *battle.Unit, a ruleset.Action) ruleset.Actio
 		case ruleset.TargetEnemySpear:
 			attackPos, ok := p.findAttackTarget(u, ruleset.ReachRangedFront)
 			if ok {
-				a.Value = int(attackPos)
+				a.Pos = attackPos
 				break
 			}
 			return p.adjustAction(u, ruleset.Action{Kind: ruleset.ActionAttack})
@@ -110,20 +103,20 @@ func (p *botPlayer) adjustAction(u *battle.Unit, a ruleset.Action) ruleset.Actio
 	case ruleset.ActionMove:
 		// 1. Step to the back row.
 		if u.HP < u.Monster.HP && !u.TilePos.IsBackRow() {
-			tile := alliedTiles[u.TilePos+3]
+			tile := p.board.Tiles[u.TilePos.BackRow().GlobalIndex()]
 			if tile.Unit == nil {
-				a.Value = int(u.TilePos + 3)
+				a.Pos = u.TilePos.BackRow()
 				break
 			}
 		}
 		// 2. Move to the right.
-		if alliedTiles[u.TilePos.RightPos()].Unit == nil {
-			a.Value = int(u.TilePos.RightPos())
+		if p.board.Tiles[u.TilePos.RightPos().GlobalIndex()].Unit == nil {
+			a.Pos = u.TilePos.RightPos()
 			break
 		}
 		// 3. Move to the left.
-		if alliedTiles[u.TilePos.LeftPos()].Unit == nil {
-			a.Value = int(u.TilePos.LeftPos())
+		if p.board.Tiles[u.TilePos.LeftPos().GlobalIndex()].Unit == nil {
+			a.Pos = u.TilePos.LeftPos()
 			break
 		}
 		// Otherwise fallback to attack.
@@ -134,7 +127,7 @@ func (p *botPlayer) adjustAction(u *battle.Unit, a ruleset.Action) ruleset.Actio
 		case ruleset.ReachRanged:
 			attackPos, ok := p.findAttackTarget(u, u.Monster.Reach)
 			if ok {
-				a.Value = int(attackPos)
+				a.Pos = attackPos
 				break
 			}
 			return p.adjustAction(u, ruleset.Action{Kind: ruleset.ActionGuard})
@@ -142,23 +135,23 @@ func (p *botPlayer) adjustAction(u *battle.Unit, a ruleset.Action) ruleset.Actio
 		case ruleset.ReachMeleeFront:
 			attackPos, ok := p.findAttackTarget(u, u.Monster.Reach)
 			if ok {
-				a.Value = int(attackPos)
+				a.Pos = attackPos
 				break
 			}
 			// There are no valid targets for the current pos,
 			// see if we can move somewhere to reach any other target.
-			for pos := battle.TilePos(0); pos < 6; pos++ {
-				if pos == u.TilePos {
+			for pos := (ruleset.TilePos{Alliance: u.Alliance}); pos.Index < 6; pos.Index++ {
+				if pos.Index == u.TilePos.Index {
 					continue
 				}
-				if alliedTiles[pos].Unit != nil {
+				if p.board.Tiles[pos.GlobalIndex()].Unit != nil {
 					continue // Pos already occupied
 				}
-				if enemyTiles[pos].Unit != nil && p.calc.CanAttackPos(u, pos, pos) {
-					return ruleset.Action{Kind: ruleset.ActionMove, Value: int(pos)}
-				}
-				if enemyTiles[pos.OtherRow()].Unit != nil && p.calc.CanAttackPos(u, pos, pos.OtherRow()) {
-					return ruleset.Action{Kind: ruleset.ActionMove, Value: int(pos)}
+				opposingPos := pos.OtherAlliance()
+				ok := (p.board.Tiles[opposingPos.GlobalIndex()].Unit != nil && p.calc.CanAttackPos(u, pos, opposingPos)) ||
+					(p.board.Tiles[opposingPos.OtherRow().GlobalIndex()].Unit != nil && p.calc.CanAttackPos(u, pos, opposingPos.OtherRow()))
+				if ok {
+					return ruleset.Action{Kind: ruleset.ActionMove, Pos: pos}
 				}
 			}
 			return p.adjustAction(u, ruleset.Action{Kind: ruleset.ActionGuard})
@@ -166,7 +159,7 @@ func (p *botPlayer) adjustAction(u *battle.Unit, a ruleset.Action) ruleset.Actio
 		case ruleset.ReachMelee:
 			attackPos, ok := p.findAttackTarget(u, u.Monster.Reach)
 			if ok {
-				a.Value = int(attackPos)
+				a.Pos = attackPos
 				break
 			}
 			return p.adjustAction(u, ruleset.Action{Kind: ruleset.ActionGuard})
@@ -182,9 +175,7 @@ func (p *botPlayer) adjustAction(u *battle.Unit, a ruleset.Action) ruleset.Actio
 	return a
 }
 
-func (p *botPlayer) findAttackTarget(u *battle.Unit, reach ruleset.AttackReach) (battle.TilePos, bool) {
-	enemyTiles := &p.board.Tiles[u.EnemyAlliance()]
-
+func (p *botPlayer) findAttackTarget(u *battle.Unit, reach ruleset.AttackReach) (ruleset.TilePos, bool) {
 	switch reach {
 	case ruleset.ReachRanged:
 		attackPos, ok := p.attackFront(u, true)
@@ -196,17 +187,18 @@ func (p *botPlayer) findAttackTarget(u *battle.Unit, reach ruleset.AttackReach) 
 			return target.TilePos, true
 		}
 		// Do a roll to choose a target.
-		attackPos = battle.TilePos(p.dice.Roll1d6("bot", u.Name(), "attack target"))
-		if enemyTiles[attackPos].Unit != nil {
+		attackPos.Index = uint8(p.dice.Roll1d6("bot", u.Name(), "attack target"))
+		if p.board.Tiles[attackPos.GlobalIndex()].Unit != nil {
 			return attackPos, true
 		}
 		// Otherwise pick a target using enumeration.
-		for i := battle.TilePos(0); i < 6; i++ {
-			if enemyTiles[i].Unit != nil {
-				return i, true
+		for index := uint8(0); index < 6; index++ {
+			attackPos.Index = index
+			if p.board.Tiles[attackPos.GlobalIndex()].Unit != nil {
+				return attackPos, true
 			}
 		}
-		return 0, false
+		return ruleset.TilePos{}, false
 
 	case ruleset.ReachRangedFront:
 		return p.attackFront(u, true)
@@ -224,17 +216,18 @@ func (p *botPlayer) findAttackTarget(u *battle.Unit, reach ruleset.AttackReach) 
 			return target.TilePos, true
 		}
 		// Do a roll to choose a target.
-		attackPos = battle.TilePos(p.dice.Roll1d6("bot", u.Name(), "attack target"))
-		if p.calc.CanAttackPos(u, u.TilePos, attackPos) && enemyTiles[attackPos].Unit != nil {
+		attackPos.Index = uint8(p.dice.Roll1d6("bot", u.Name(), "attack target"))
+		if p.calc.CanAttackPos(u, u.TilePos, attackPos) && p.board.Tiles[attackPos.GlobalIndex()].Unit != nil {
 			return attackPos, true
 		}
 		// Otherwise pick a target using enumeration.
-		for i := battle.TilePos(0); i < 6; i++ {
-			if enemyTiles[i].Unit != nil {
-				return i, true
+		for index := uint8(0); index < 6; index++ {
+			attackPos.Index = index
+			if p.board.Tiles[attackPos.GlobalIndex()].Unit != nil {
+				return attackPos, true
 			}
 		}
-		return 0, false
+		return ruleset.TilePos{}, false
 
 	default:
 		panic("unimplemented")

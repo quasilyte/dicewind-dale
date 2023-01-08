@@ -66,9 +66,15 @@ func (r *skillCastRunner) Update(delta float64) {
 	r.delay -= delta
 	if r.delay <= 0 {
 		r.fired = true
-		r.scene.Audio().PlaySound(r.event.Skill.CastSound)
-		e := newEffectNode(r.targetPos, r.event.Skill.ImpactAnimation)
-		e.EventCompleted.Connect(r, r.onAnimationCompleted)
-		r.scene.AddObject(e)
+		if r.event.Skill.CastSound != assets.AudioNone {
+			r.scene.Audio().PlaySound(r.event.Skill.CastSound)
+		}
+		if r.event.Skill.ImpactAnimation != assets.ImageNone {
+			e := newEffectNode(r.targetPos, r.event.Skill.ImpactAnimation)
+			e.EventCompleted.Connect(r, r.onAnimationCompleted)
+			r.scene.AddObject(e)
+		} else {
+			r.onAnimationCompleted(gesignal.Void{})
+		}
 	}
 }
