@@ -1,3 +1,7 @@
-assets/_data
+assets/_data/audio
+assets/_data/font
+assets/_data/image
+
 _unused_data
+
 bin/
