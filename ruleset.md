@@ -5,7 +5,16 @@
 1. Roll a starting skill 
 2. Choose a starting weapon
 3. Choose a talent
-4. Choose how your character looks like
+4. Choose a starting trait
+5. Choose how your character looks like
+
+### Hero Traits
+
+Starting traits:
+
+* Warrior trait: +3 max health
+* Mage trait: +5 max energy
+* Rogue trait: +2 max health, +3 max energy
 
 ### Hero Talents
 

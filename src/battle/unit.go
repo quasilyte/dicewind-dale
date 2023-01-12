@@ -66,7 +66,7 @@ func (u *Unit) MaxHP() int {
 	if u.Monster != nil {
 		return u.Monster.HP
 	}
-	return u.Hero.Class.HP
+	return u.Hero.MaxHP()
 }
 
 func (u *Unit) IsMonster() bool {
@@ -105,7 +105,7 @@ func (u *Unit) CardImage() resource.ImageID {
 	if u.Monster != nil {
 		return u.Monster.CardImage
 	}
-	return u.Hero.Class.CardImage
+	return u.Hero.CardImage
 }
 
 func (u *Unit) Name() string {
@@ -113,20 +113,6 @@ func (u *Unit) Name() string {
 		return u.Monster.Name
 	}
 	return u.Hero.Name
-}
-
-func (u *Unit) WeaponMastery() ruleset.MasteryKind {
-	if u.Monster != nil {
-		return ruleset.MasteryNone
-	}
-	return u.Hero.Weapon.Class.Mastery
-}
-
-func (u *Unit) Masteries() []ruleset.MasteryKind {
-	if u.Monster != nil {
-		return nil
-	}
-	return u.Hero.Class.Masteries
 }
 
 func (u *Unit) Skill(i int) *ruleset.Skill {

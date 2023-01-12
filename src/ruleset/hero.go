@@ -12,10 +12,12 @@ type Hero struct {
 
 	CurrentSkills []*Skill
 
+	CardImage resource.ImageID
+
+	Traits []HeroTrait
+
 	Weapon *HeroWeapon
 	Armor  *HeroArmor
-
-	Class *HeroClass
 }
 
 func (h *Hero) DamageRange() DamageRange {
@@ -26,15 +28,34 @@ func (h *Hero) WeaponKind() WeaponKind {
 	return h.Weapon.Class.Kind
 }
 
-type HeroClass struct {
-	Name string
+func (h *Hero) MaxHP() int {
+	hp := 3 // Base hero health
+	for _, t := range h.Traits {
+		switch t {
+		case TraitHealthBonus:
+			hp++
+		case TraitStartingHealthBonus:
+			hp += 3
+		case TraitStartingHybridBonus:
+			hp += 2
+		}
+	}
+	return hp
+}
 
-	CardImage resource.ImageID
-
-	HP int
-	MP int
-
-	Masteries []MasteryKind
+func (h *Hero) MaxMP() int {
+	energy := 2 // Base hero energy
+	for _, t := range h.Traits {
+		switch t {
+		case TraitEnergyBonus:
+			energy++
+		case TraitStratingEnergyBonus:
+			energy += 5
+		case TraitStartingHybridBonus:
+			energy += 3
+		}
+	}
+	return energy
 }
 
 type HeroArmor struct {
@@ -45,24 +66,12 @@ type HeroWeapon struct {
 	Class *HeroWeaponClass
 }
 
-type MasteryKind int
-
-const (
-	MasteryNone MasteryKind = iota
-	// MasterySword grants +1 damage for basic attacks when using swords.
-	MasterySword
-	// MasteryStaff grants +2 magic damage for all spells when rolled 3 or more when using staves.
-	MasteryStaff
-)
-
 type HeroWeaponClass struct {
 	Name string
 
 	Level int
 
 	Kind WeaponKind
-
-	Mastery MasteryKind
 
 	Reach AttackReach
 

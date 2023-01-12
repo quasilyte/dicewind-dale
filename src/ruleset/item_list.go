@@ -35,29 +35,26 @@ var ArmorList = []*HeroArmorClass{
 
 var WeaponList = []*HeroWeaponClass{
 	{
-		Name:    "Sword",
-		Level:   1,
-		Kind:    WeaponSword,
-		Mastery: MasterySword,
-		Damage:  DamageRange{0, 1, 1, 1, 2, 3},
-		Reach:   ReachMelee,
+		Name:   "Sword",
+		Level:  1,
+		Kind:   WeaponSword,
+		Damage: DamageRange{0, 1, 1, 1, 2, 3},
+		Reach:  ReachMelee,
 	},
 
 	{
-		Name:    "Scimitar",
-		Level:   1,
-		Kind:    WeaponScimitar,
-		Mastery: MasterySword,
-		Damage:  DamageRange{0, 0, 1, 2, 2, 3},
-		Reach:   ReachMelee,
+		Name:   "Scimitar",
+		Level:  1,
+		Kind:   WeaponScimitar,
+		Damage: DamageRange{0, 0, 1, 2, 2, 3},
+		Reach:  ReachMelee,
 	},
 
 	{
-		Name:    "Staff",
-		Level:   1,
-		Kind:    WeaponBlunt,
-		Mastery: MasteryStaff,
-		Damage:  DamageRange{0, 0, 1, 1, 1, 2},
-		Reach:   ReachMelee,
+		Name:   "Staff",
+		Level:  1,
+		Kind:   WeaponBlunt,
+		Damage: DamageRange{0, 0, 1, 1, 1, 2},
+		Reach:  ReachMelee,
 	},
 }

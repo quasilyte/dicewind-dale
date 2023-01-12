@@ -45,13 +45,12 @@ func NewController(state *session.State) *Controller {
 func (c *Controller) Init(scene *ge.Scene) {
 	c.scene = scene
 
-	warriorClass := ruleset.HeroClassByName("Warrior")
-	sorcClass := ruleset.HeroClassByName("Sorcerer")
 	warriorHero := &ruleset.Hero{
 		Name:      "Alpha",
-		CurrentHP: warriorClass.HP,
-		CurrentMP: warriorClass.MP,
-		Class:     warriorClass,
+		CardImage: assets.ImageHeroWarriorCard,
+		Traits: []ruleset.HeroTrait{
+			ruleset.TraitStartingHealthBonus,
+		},
 		Weapon: &ruleset.HeroWeapon{
 			Class: ruleset.WeaponByName("Sword"),
 		},
@@ -63,11 +62,14 @@ func (c *Controller) Init(scene *ge.Scene) {
 			ruleset.SkillByName("Consume Poison"),
 		},
 	}
+	warriorHero.CurrentHP = warriorHero.MaxHP()
+	warriorHero.CurrentMP = warriorHero.MaxMP()
 	sorcHero := &ruleset.Hero{
 		Name:      "Beta",
-		CurrentHP: sorcClass.HP,
-		CurrentMP: sorcClass.MP,
-		Class:     sorcClass,
+		CardImage: assets.ImageHeroSorcererCard,
+		Traits: []ruleset.HeroTrait{
+			ruleset.TraitStratingEnergyBonus,
+		},
 		Weapon: &ruleset.HeroWeapon{
 			Class: ruleset.WeaponByName("Staff"),
 		},
@@ -78,6 +80,8 @@ func (c *Controller) Init(scene *ge.Scene) {
 			ruleset.SkillByName("Hellfire"),
 		},
 	}
+	sorcHero.CurrentHP = sorcHero.MaxHP()
+	sorcHero.CurrentMP = sorcHero.MaxMP()
 
 	c.board = battle.NewBoard()
 
