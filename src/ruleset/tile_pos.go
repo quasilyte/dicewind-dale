@@ -9,6 +9,13 @@ func GlobalTileIndexOf(alliance, index uint8) int {
 	return (TilePos{Alliance: alliance, Index: index}).GlobalIndex()
 }
 
+func makeTilePos(alliance uint8, col, row int) TilePos {
+	return TilePos{
+		Alliance: alliance,
+		Index:    uint8(row*3 + col),
+	}
+}
+
 func (pos TilePos) GlobalIndex() int {
 	index := int(pos.Index)
 	if pos.Alliance == 1 {
@@ -19,6 +26,21 @@ func (pos TilePos) GlobalIndex() int {
 
 func (pos TilePos) IsBackRow() bool {
 	return pos.Index >= 3
+}
+
+func (pos TilePos) WithCol(col int) TilePos {
+	return makeTilePos(pos.Alliance, col, pos.Row())
+}
+
+func (pos TilePos) WithRow(row int) TilePos {
+	return makeTilePos(pos.Alliance, pos.Col(), row)
+}
+
+func (pos TilePos) Row() int {
+	if pos.IsBackRow() {
+		return 1
+	}
+	return 0
 }
 
 func (pos TilePos) Col() int {

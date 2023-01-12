@@ -2,7 +2,6 @@ package battle
 
 import (
 	"github.com/quasilyte/dicewind/src/ruleset"
-	"github.com/quasilyte/ge/xslices"
 	"github.com/quasilyte/gmath"
 )
 
@@ -18,27 +17,33 @@ func NewCalculator(dice *ruleset.Dice, board *Board) *Calculator {
 func (c *Calculator) SkillDamage(caster *Unit, skill *ruleset.Skill, effect ruleset.Effect) int {
 	roll := c.dice.Roll1d6("runner", caster.Name(), "skill effect damage")
 	damage := effect.Value.(ruleset.DamageRange)[roll]
-	switch effect.Source {
-	case ruleset.SourceMagical:
-		if caster.WeaponMastery() == ruleset.MasteryStaff && xslices.Contains(caster.Masteries(), ruleset.MasteryStaff) {
-			if roll >= 2 {
-				damage += 2
-			}
-		}
-	}
+	// switch effect.Source {
+	// case ruleset.SourceMagical:
+	// 	if caster.WeaponMastery() == ruleset.MasteryStaff && xslices.Contains(caster.Masteries(), ruleset.MasteryStaff) {
+	// 		if roll >= 2 {
+	// 			damage += 2
+	// 		}
+	// 	}
+	// }
 	return damage
 }
 
-func (c *Calculator) AttackDamage(attacker *Unit, rollBonus int) int {
+func (c *Calculator) AttackDamage(attacker, defender *Unit, rollBonus int) int {
 	roll := c.dice.Roll1d6("calc", attacker.Name(), "attack damage")
+	defender.WalkItemEffects(func(e ruleset.ItemEffect) {
+		switch e.Kind {
+		case ruleset.ItemEffectAttackerRollReduction:
+			rollBonus -= e.Value
+		}
+	})
 	roll = gmath.Clamp(roll+rollBonus, 0, 5)
 	damage := attacker.AttackDamage()[roll]
-	switch attacker.WeaponMastery() {
-	case ruleset.MasterySword:
-		if xslices.Contains(attacker.Masteries(), ruleset.MasterySword) {
-			damage++
-		}
-	}
+	// switch attacker.WeaponMastery() {
+	// case ruleset.MasterySword:
+	// 	if xslices.Contains(attacker.Masteries(), ruleset.MasterySword) {
+	// 		damage++
+	// 	}
+	// }
 	return damage
 }
 
@@ -57,6 +62,8 @@ func (c *Calculator) CanCastThere(u *Unit, skill *ruleset.Skill, from, pos rules
 		reach = ruleset.ReachMelee
 	case ruleset.TargetEnemySpear:
 		reach = ruleset.ReachRangedFront
+	case ruleset.TargetEnemyRow:
+		return true
 	case ruleset.TargetEmptyAllied:
 		return pos.Alliance == uint8(u.Alliance) &&
 			c.board.Tiles[pos.GlobalIndex()].Unit == nil

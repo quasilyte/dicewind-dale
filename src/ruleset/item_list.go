@@ -11,6 +11,28 @@ func WeaponByName(name string) *HeroWeaponClass {
 	panic(fmt.Sprintf("unknown weapon %s", name))
 }
 
+func ArmorByName(name string) *HeroArmorClass {
+	for _, a := range ArmorList {
+		if a.Name == name {
+			return a
+		}
+	}
+	panic(fmt.Sprintf("unknown armor %s", name))
+}
+
+var ArmorList = []*HeroArmorClass{
+	{
+		// Offers minimal protection for the wearer.
+		// The defense increase effects are minimal,
+		// but there are no negative side effects.
+		Name:  "Mercenary Armor",
+		Level: 1,
+		Effects: []ItemEffect{
+			{Kind: ItemEffectAttackerRollReduction, Value: 1},
+		},
+	},
+}
+
 var WeaponList = []*HeroWeaponClass{
 	{
 		Name:    "Sword",

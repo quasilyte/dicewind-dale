@@ -4,16 +4,16 @@ import (
 	"github.com/quasilyte/dicewind/assets"
 	"github.com/quasilyte/dicewind/src/battle"
 	"github.com/quasilyte/dicewind/src/gameui"
+	"github.com/quasilyte/dicewind/src/ruleset"
 	"github.com/quasilyte/ge"
 	"github.com/quasilyte/ge/gesignal"
-	"github.com/quasilyte/gmath"
 )
 
 type skillCastRunner struct {
 	scene *ge.Scene
 
-	event     *battle.UnitSkillCastEvent
-	targetPos gmath.Vec
+	event *battle.UnitSkillCastEvent
+	board *battle.Board
 
 	sourceLabel *gameui.Label
 
@@ -23,10 +23,10 @@ type skillCastRunner struct {
 	EventCompleted gesignal.Event[gesignal.Void]
 }
 
-func newSkillCastRunner(e *battle.UnitSkillCastEvent, targetPos gmath.Vec) *skillCastRunner {
+func newSkillCastRunner(board *battle.Board, e *battle.UnitSkillCastEvent) *skillCastRunner {
 	return &skillCastRunner{
-		event:     e,
-		targetPos: targetPos,
+		event: e,
+		board: board,
 	}
 }
 
@@ -70,11 +70,29 @@ func (r *skillCastRunner) Update(delta float64) {
 			r.scene.Audio().PlaySound(r.event.Skill.CastSound)
 		}
 		if r.event.Skill.ImpactAnimation != assets.ImageNone {
-			e := newEffectNode(r.targetPos, r.event.Skill.ImpactAnimation)
-			e.EventCompleted.Connect(r, r.onAnimationCompleted)
-			r.scene.AddObject(e)
+			r.spawnEffects()
 		} else {
 			r.onAnimationCompleted(gesignal.Void{})
 		}
+	}
+}
+
+func (r *skillCastRunner) spawnEffects() {
+	switch r.event.Skill.TargetKind {
+	case ruleset.TargetEnemyRow:
+		g := newEffectGroup()
+		for col := 0; col < 3; col++ {
+			targetPos := r.board.Tiles[r.event.Target.WithCol(col).GlobalIndex()].Pos
+			e := newEffectNode(targetPos, r.event.Skill.ImpactAnimation)
+			g.AddEffect(e)
+			r.scene.AddObject(e)
+		}
+		g.EventCompleted.Connect(r, r.onAnimationCompleted)
+
+	default:
+		targetPos := r.board.Tiles[r.event.Target.GlobalIndex()].Pos
+		e := newEffectNode(targetPos, r.event.Skill.ImpactAnimation)
+		e.EventCompleted.Connect(r, r.onAnimationCompleted)
+		r.scene.AddObject(e)
 	}
 }

@@ -11,6 +11,7 @@ import (
 type eventsRunner struct {
 	scene *ge.Scene
 
+	board *battle.Board
 	nodes *boardNodes
 
 	active bool
@@ -21,8 +22,8 @@ type eventsRunner struct {
 	EventCompleted gesignal.Event[gesignal.Void]
 }
 
-func newEventsRunner(nodes *boardNodes) *eventsRunner {
-	return &eventsRunner{nodes: nodes}
+func newEventsRunner(board *battle.Board, nodes *boardNodes) *eventsRunner {
+	return &eventsRunner{board: board, nodes: nodes}
 }
 
 func (r *eventsRunner) Init(scene *ge.Scene) {
@@ -66,8 +67,7 @@ func (r *eventsRunner) runEvent(e battle.Event) {
 		r.active = true
 
 	case *battle.UnitSkillCastEvent:
-		targetNode := r.nodes.tiles[e.Target.GlobalIndex()]
-		r2 := newSkillCastRunner(e, targetNode.body.Pos)
+		r2 := newSkillCastRunner(r.board, e)
 		r2.EventCompleted.Connect(r, r.subEventCompleted)
 		r.scene.AddObject(r2)
 

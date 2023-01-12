@@ -1,3 +1,85 @@
+## Heroes
+
+### Character Creation
+
+1. Roll a starting skill 
+2. Choose a starting weapon
+3. Choose a talent
+4. Choose how your character looks like
+
+### Hero Talents
+
+* Lockpicking
+* Search
+* Trap disarming
+* Appraise
+* Alchemy
+* Item identification
+
+**Lockpicking** allows a character to open a locked object with 100% chance. Without such talent, there is only ~16.6% of success (6 should be rolled).
+
+**Search** allows to detect a hidden object or room, opening more possibilities for exploration.
+
+**Trap disarming** allows a character to safely disarm any trap. Some random events may have trap-related moments. Some hidden rooms may be guarded by a trapped door. In addition to that, a treasure chest can be protected by a trap in addition to being locked.
+
+**Appraise** improves the prices in the shops. You can sell items for more gold and buy new equipment for lower prices.
+
+**Alchemy** allows potion mixing to achieve unique results. It also improves the potion effects when they're consumed by the character with this talent.
+
+**Item identification** allows a party to identify any new item at once, anywhere. Without this talent, items can be identified only in dedicated places like shops.
+
+## Effects
+
+### Negative Effects
+
+Effects that are simple opposites of positive effects are not listed.
+
+* Skill usage ban (silence)
+* Movement action ban (dryad root)
+* Attack action ban (disarm)
+* Stun
+* Sleep (like stun, but dealing damage interrupts the sleep)
+
+### Positive Effects
+
+Attack effects:
+
+* Attack roll increase
+* Attack damage increase (physical/magical)
+
+Skill effects:
+
+* Physical skill roll increase
+* Spell skill roll increase
+
+Offensive effects:
+
+* Poison
+* Extra damage based on the poison level
+* Bleeding
+* Extra damage based on the bleeding level
+
+Defensive effects:
+
+* Received attack roll reduction
+* Received damage reduction
+* Received poison reduction
+* Received bleeding reduction
+* Shield points (restricted damage reduction)
+* Max health increase
+
+Other effects:
+
+* Cure poison
+* Convert poison to health
+* Convert poison to energy
+* Cure bleeding
+* Convert bleeding to health
+* Convert bleeding to energy
+* Max energy increase
+* Restore health
+* Restore energy
+
 ## Bots
 
 ### Attack

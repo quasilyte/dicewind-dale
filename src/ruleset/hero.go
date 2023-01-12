@@ -13,6 +13,7 @@ type Hero struct {
 	CurrentSkills []*Skill
 
 	Weapon *HeroWeapon
+	Armor  *HeroArmor
 
 	Class *HeroClass
 }
@@ -34,6 +35,10 @@ type HeroClass struct {
 	MP int
 
 	Masteries []MasteryKind
+}
+
+type HeroArmor struct {
+	Class *HeroArmorClass
 }
 
 type HeroWeapon struct {
@@ -63,3 +68,26 @@ type HeroWeaponClass struct {
 
 	Damage DamageRange
 }
+
+type HeroArmorClass struct {
+	Name string
+
+	Level int
+
+	Effects []ItemEffect
+}
+
+type ItemEffect struct {
+	Kind ItemEffectKind
+
+	Value int
+}
+
+type ItemEffectKind int
+
+const (
+	ItemEffectNone ItemEffectKind = iota
+	// Defensive effects.
+	ItemEffectPhysicalDamageReduction
+	ItemEffectAttackerRollReduction
+)

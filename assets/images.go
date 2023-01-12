@@ -33,6 +33,7 @@ func registerImages(ctx *ge.Context) {
 		ImageSkillTrueStrike:      {Path: "image/skill/true_strike.png"},
 		ImageSkillConsumePoison:   {Path: "image/skill/consume_poison.png"},
 		ImageSkillSummonSkeleton:  {Path: "image/skill/summon_skeleton.png"},
+		ImageSkillIconFirestorm:   {Path: "image/skill/firestorm.png"},
 		ImageSkillIconFlameStrike: {Path: "image/skill/flame_strike.png"},
 		ImageSkillIconFireball:    {Path: "image/skill/fireball.png"},
 		ImageSkillIconHellfire:    {Path: "image/skill/hellfire.png"},
@@ -56,6 +57,7 @@ func registerImages(ctx *ge.Context) {
 		ImagePoisonExplosion:         {Path: "image/poison_explosion.png", FrameWidth: 128},
 		ImagePoisonExplosionReversed: {Path: "image/poison_explosion_reversed.png", FrameWidth: 128},
 		ImageHellfireExplosion:       {Path: "image/hellfire_explosion.png", FrameWidth: 120},
+		ImageFirestormExplosion:      {Path: "image/firestorm_explosion.png", FrameWidth: 128},
 		ImageFireExplosion:           {Path: "image/fire_explosion.png", FrameWidth: 120},
 		ImageDarkBoltExplosion:       {Path: "image/dark_bolt_explosion.png", FrameWidth: 64},
 		ImageFlameStrike:             {Path: "image/flame_strike.png", FrameWidth: 128},
@@ -96,6 +98,7 @@ const (
 	ImageSkillTrueStrike
 	ImageSkillConsumePoison
 	ImageSkillSummonSkeleton
+	ImageSkillIconFirestorm
 	ImageSkillIconFlameStrike
 	ImageSkillIconFireball
 	ImageSkillIconHellfire
@@ -119,6 +122,7 @@ const (
 	ImagePoisonExplosion
 	ImagePoisonExplosionReversed
 	ImageFireExplosion
+	ImageFirestormExplosion
 	ImageHellfireExplosion
 	ImageDarkBoltExplosion
 	ImageFlameStrike

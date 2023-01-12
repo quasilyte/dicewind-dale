@@ -66,6 +66,7 @@ type EffectKind int
 const (
 	EffectNone EffectKind = iota
 	EffectDamage
+	EffectDamageRow
 	EffectAttack
 	EffectRollBonus
 	EffectPoison
@@ -82,6 +83,7 @@ const (
 	TargetNone TargetKind = iota
 	TargetSelf
 	TargetAttackCandidate
+	TargetEnemyRow
 	TargetEnemyAny
 	TargetEnemyMelee
 	TargetEnemySpear
@@ -101,7 +103,7 @@ type Skill struct {
 
 func (s *Skill) CanTargetEnemyTile() bool {
 	switch s.TargetKind {
-	case TargetEnemyAny, TargetEnemyMelee, TargetEnemySpear, TargetAttackCandidate:
+	case TargetEnemyAny, TargetEnemyMelee, TargetEnemySpear, TargetAttackCandidate, TargetEnemyRow:
 		return true
 	default:
 		return false
@@ -163,7 +165,7 @@ var SkillList = []*Skill{
 	},
 
 	{
-		Name:            "Summon Skeleton",
+		Name:            "Summon Undead",
 		Icon:            assets.ImageSkillSummonSkeleton,
 		ImpactAnimation: assets.ImageDarkBoltExplosion,
 		CastSound:       assets.AudioDarkExplosion,
@@ -205,6 +207,22 @@ var SkillList = []*Skill{
 				Kind:   EffectDamage,
 				Source: SourceMagical,
 				Value:  DamageRange{1, 2, 3, 3, 3, 4},
+			},
+		},
+	},
+
+	{
+		Name:            "Firestorm",
+		Icon:            assets.ImageSkillIconFirestorm,
+		ImpactAnimation: assets.ImageFirestormExplosion,
+		CastSound:       assets.AudioFireExplosion,
+		EnergyCost:      3,
+		TargetKind:      TargetEnemyRow,
+		TargetEffects: []Effect{
+			{
+				Kind:   EffectDamageRow,
+				Source: SourceMagical,
+				Value:  DamageRange{1, 2, 2, 2, 2, 3},
 			},
 		},
 	},

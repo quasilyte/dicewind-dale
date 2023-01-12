@@ -1,6 +1,17 @@
 - enable skills
 + front attack monster doesn't move in this layout:
 
+
+Armor ideas
+Defense:
+- extra health
+- damage reduction (based on the damage type?)
+- enemy attack roll decrease
+- damage cap
+- health regen during guard action
+Spell casters:
+- extra mana
+
 character progression:
 * levels
   * new skills

@@ -87,11 +87,20 @@ func (r *Runner) applySkillEffects(u *Unit, skill *ruleset.Skill, pos ruleset.Ti
 		case ruleset.EffectPoison:
 			target.Poison = gmath.ClampMax(target.Poison+e.Value.(int), ruleset.MaxPoison)
 		case ruleset.EffectAttack:
-			damage := r.calc.AttackDamage(u, rollBonus)
-			r.applyDamage(u, ruleset.SourcePhysical, damage, pos)
+			damage := r.calc.AttackDamage(u, target, rollBonus)
+			r.applyDamage(target, ruleset.SourcePhysical, damage, pos)
 		case ruleset.EffectDamage:
 			damage := r.calc.SkillDamage(u, skill, e)
-			r.applyDamage(u, e.Source, damage, target.TilePos)
+			r.applyDamage(target, e.Source, damage, target.TilePos)
+		case ruleset.EffectDamageRow:
+			damage := r.calc.SkillDamage(u, skill, e)
+			for col := 0; col < 3; col++ {
+				targetPos := pos.WithCol(col)
+				target := r.board.Tiles[targetPos.GlobalIndex()].Unit
+				if target != nil {
+					r.applyDamage(target, e.Source, damage, target.TilePos)
+				}
+			}
 		case ruleset.EffectSummonSkeleton:
 			r.board.AddUnit(NewMonsterUnit(u.Alliance, ruleset.MonsterByName("Skeleton")), pos)
 		case ruleset.EffectPoisonToHealth:
@@ -138,8 +147,8 @@ func (r *Runner) applyActions(actions []ruleset.Action) {
 				Attacker: u,
 				Defender: target,
 			})
-			damage := r.calc.AttackDamage(u, 0)
-			r.applyDamage(u, ruleset.SourcePhysical, damage, a.Pos)
+			damage := r.calc.AttackDamage(u, target, 0)
+			r.applyDamage(target, ruleset.SourcePhysical, damage, a.Pos)
 
 		case ruleset.ActionGuard:
 			u.Guarding = true
@@ -161,17 +170,16 @@ func (r *Runner) applyActions(actions []ruleset.Action) {
 	}
 }
 
-func (r *Runner) applyDamage(u *Unit, damageKind ruleset.EffectSource, damage int, pos ruleset.TilePos) {
-	target := r.board.Tiles[pos.GlobalIndex()].Unit
-	if target.Guarding && damageKind == ruleset.SourcePhysical {
+func (r *Runner) applyDamage(defender *Unit, damageKind ruleset.EffectSource, damage int, pos ruleset.TilePos) {
+	if defender.Guarding && damageKind == ruleset.SourcePhysical {
 		damage -= 1
 	}
 	if damage < 0 {
 		damage = 0
 	}
-	target.HP -= damage
+	defender.HP -= damage
 	r.events = append(r.events, &UnitDamagedEvent{
-		Unit:   target,
+		Unit:   defender,
 		Damage: damage,
 	})
 }

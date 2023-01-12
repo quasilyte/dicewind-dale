@@ -55,6 +55,9 @@ func (c *Controller) Init(scene *ge.Scene) {
 		Weapon: &ruleset.HeroWeapon{
 			Class: ruleset.WeaponByName("Sword"),
 		},
+		Armor: &ruleset.HeroArmor{
+			Class: ruleset.ArmorByName("Mercenary Armor"),
+		},
 		CurrentSkills: []*ruleset.Skill{
 			ruleset.SkillByName("True Strike"),
 			ruleset.SkillByName("Consume Poison"),
@@ -71,15 +74,15 @@ func (c *Controller) Init(scene *ge.Scene) {
 		CurrentSkills: []*ruleset.Skill{
 			ruleset.SkillByName("Flame Strike"),
 			ruleset.SkillByName("Fireball"),
+			ruleset.SkillByName("Firestorm"),
 			ruleset.SkillByName("Hellfire"),
-			ruleset.SkillByName("Summon Skeleton"),
 		},
 	}
 
 	c.board = battle.NewBoard()
 
-	c.board.AddUnit(battle.NewHeroUnit(0, sorcHero), ruleset.TilePos{Alliance: 0, Index: 4})
-	c.board.AddUnit(battle.NewHeroUnit(0, warriorHero), ruleset.TilePos{Alliance: 0, Index: 0})
+	c.board.AddUnit(battle.NewHeroUnit(0, sorcHero), ruleset.TilePos{Alliance: 0, Index: 0})
+	c.board.AddUnit(battle.NewHeroUnit(0, warriorHero), ruleset.TilePos{Alliance: 0, Index: 4})
 
 	c.board.AddUnit(battle.NewMonsterUnit(1, ruleset.MonsterByName("Grey Minion Archer")), ruleset.TilePos{Alliance: 1, Index: 3})
 	c.board.AddUnit(battle.NewMonsterUnit(1, ruleset.MonsterByName("Darkspawn")), ruleset.TilePos{Alliance: 1, Index: 1})
@@ -91,7 +94,7 @@ func (c *Controller) Init(scene *ge.Scene) {
 	c.bot = newBotPlayer(c.calc, c.dice, c.board)
 	c.human = newHumanPlayer(c.state.MainInput, c.calc, c.board)
 	c.runner = battle.NewRunner(c.calc, c.dice, c.board)
-	c.eventsRunner = newEventsRunner(&c.nodes)
+	c.eventsRunner = newEventsRunner(c.board, &c.nodes)
 
 	c.human.EventActionsReady.Connect(nil, c.onActionsReady)
 	c.bot.EventActionsReady.Connect(nil, c.onActionsReady)

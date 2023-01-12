@@ -43,6 +43,18 @@ func NewMonsterUnit(alliance uint8, m *ruleset.Monster) *Unit {
 	}
 }
 
+func (u *Unit) WalkItemEffects(f func(e ruleset.ItemEffect)) {
+	if u.Hero == nil {
+		return
+	}
+
+	if u.Hero.Armor != nil {
+		for _, e := range u.Hero.Armor.Class.Effects {
+			f(e)
+		}
+	}
+}
+
 func (u *Unit) EnemyAlliance() uint8 {
 	if u.Alliance == 0 {
 		return 1
