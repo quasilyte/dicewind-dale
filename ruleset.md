@@ -1,3 +1,31 @@
+## Gameplay
+
+The game starts with a game module selection (for instance, a Crypt).
+
+Then players create a party.
+
+The party starts at the entrance of the module. It could be considered to be a first level of a dungeon.
+
+The game loop looks like this:
+
+1. Choose a tile to visit (pick one of 3)
+  * Roll an encounter
+    * Clear the encounter (if any)
+  * Clear the tile event (usually involves dice rolling)
+2. If dungeon level is not complete, repeat step 1
+3. Fight a level boss
+  * Roll a boss fight reward (items, gold)
+  * Roll 3 skill cards for every player
+4. If it was the last dungeon level, it's victory
+5. Return to the city: can rest and buy items now
+6. Back to the dungeon: start a new dungeon level, repeat step 1
+
+A dungeon level boss is encountered after clearing the required number of tiles.
+
+Random encounters rarely give any benefits, but scavenge roll is done after every such battle.
+
+The heroes try to survive through the dungeon level and defeat the boss. The dungeon tiles can give them temporary or permanent bonuses. Higher rewards usually mean higher risks. After the boss is defeated, every hero gets a new skill. A party has the chance to resupply at the town and go back to the dungeon, to start clearing the next level.
+
 ## Heroes
 
 ### Character Creation
@@ -18,12 +46,13 @@ Starting traits:
 
 ### Hero Talents
 
-* Lockpicking
-* Search
-* Trap disarming
-* Appraise
-* Alchemy
-* Item identification
+* Lockpicking (very useful in some tiles)
+* Search (bonus roll point in most roll-for-reward tiles)
+* Trap disarming (very useful in some tiles)
+* Appraise (better buy/sell prices in the city)
+* Alchemy (mix potions for greater potions)
+* Lore (identify items outside of the city)
+* Scavenge (improves the chance of getting any loot after the random encounter)
 
 **Lockpicking** allows a character to open a locked object with 100% chance. Without such talent, there is only ~16.6% of success (6 should be rolled).
 
@@ -35,7 +64,9 @@ Starting traits:
 
 **Alchemy** allows potion mixing to achieve unique results. It also improves the potion effects when they're consumed by the character with this talent.
 
-**Item identification** allows a party to identify any new item at once, anywhere. Without this talent, items can be identified only in dedicated places like shops.
+**Lore** allows a party to identify any new item at once, anywhere. Without this talent, items can be identified only in dedicated places like shops.
+
+**Scavenge** adds +2 to a scavenge roll after a random encounter.
 
 ## Effects
 

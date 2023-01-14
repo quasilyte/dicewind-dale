@@ -6,4 +6,6 @@ import (
 
 type State struct {
 	MainInput *input.Handler
+
+	AddonDir string
 }
