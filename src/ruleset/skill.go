@@ -3,7 +3,7 @@ package ruleset
 import (
 	"fmt"
 
-	assets "github.com/quasilyte/dicewind/assets"
+	"github.com/quasilyte/dicewind/assets"
 	"github.com/quasilyte/ge/resource"
 )
 

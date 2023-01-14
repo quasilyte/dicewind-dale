@@ -4,7 +4,7 @@ import (
 	"image/color"
 	"strconv"
 
-	assets "github.com/quasilyte/dicewind/assets"
+	"github.com/quasilyte/dicewind/assets"
 	"github.com/quasilyte/ge"
 )
 

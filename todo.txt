@@ -1,3 +1,11 @@
+dungeon level screen:
+* choose a room by clicking on it
+  * info is showed in a popup window
+  * you select the action in the popup window too
+* press on hero and then on a tile to change its position (formation)
+  * when you select a hero, their inventory is shown in the bottom left corner
+* transfer skills and items
+
 - enable skills
 + front attack monster doesn't move in this layout:
 

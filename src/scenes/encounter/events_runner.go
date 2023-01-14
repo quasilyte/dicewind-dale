@@ -89,7 +89,7 @@ func (r *eventsRunner) runEvent(e battle.Event) {
 	case *battle.UnitMoveEvent:
 		srcNode := r.nodes.tiles[e.From.GlobalIndex()]
 		dstNode := r.nodes.tiles[e.To.GlobalIndex()]
-		r2 := newMoveRunner(e, srcNode.body.Pos, dstNode.body.Pos, e.Unit.CardImage())
+		r2 := newMoveRunner(e, srcNode.GetPos(), dstNode.GetPos(), e.Unit.CardImage())
 		r2.EventCompleted.Connect(r, r.subEventCompleted)
 		r.scene.AddObject(r2)
 		srcNode.SetUnit(nil)

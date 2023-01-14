@@ -61,8 +61,8 @@
   * [5] restores 4 health and energy to all party members
   * [4] restores 4 health to all party members
   * [3] restores 4 energy to all party members
-  * [2] restores 4 health to a selected party member
-  * [1] restores 4 energy to a selected party member
+  * [2] restores 6 health to a selected party member
+  * [1] restores 6 energy to a selected party member
 
 * alchemy table - get useful supplies
   danger level: 2/5

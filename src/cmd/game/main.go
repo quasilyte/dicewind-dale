@@ -3,14 +3,12 @@ package main
 import (
 	"flag"
 	"os"
-	"path/filepath"
 	"strings"
 	"time"
 
-	assets "github.com/quasilyte/dicewind/assets"
+	"github.com/quasilyte/dicewind/assets"
 	"github.com/quasilyte/dicewind/src/controls"
-	"github.com/quasilyte/dicewind/src/dataldr"
-	"github.com/quasilyte/dicewind/src/scenes/dungeon"
+	"github.com/quasilyte/dicewind/src/scenes/encounter"
 	"github.com/quasilyte/dicewind/src/session"
 	"github.com/quasilyte/ge"
 
@@ -38,16 +36,16 @@ func main() {
 	assets.Register(ctx)
 	controls.BindKeymap(ctx, state)
 
-	m, err := dataldr.LoadModule(filepath.Join(state.AddonDir, "crypt"))
-	if err != nil {
-		panic(err)
-	}
-	level := dungeon.GenerateLevel(m)
-	if err := ge.RunGame(ctx, dungeon.NewController(state, level)); err != nil {
-		panic(err)
-	}
-
-	// if err := ge.RunGame(ctx, encounter.NewController(state)); err != nil {
+	// m, err := dataldr.LoadModule(filepath.Join(state.AddonDir, "crypt"))
+	// if err != nil {
 	// 	panic(err)
 	// }
+	// level := dungeon.GenerateLevel(m)
+	// if err := ge.RunGame(ctx, dungeon.NewController(state, level)); err != nil {
+	// 	panic(err)
+	// }
+
+	if err := ge.RunGame(ctx, encounter.NewController(state)); err != nil {
+		panic(err)
+	}
 }

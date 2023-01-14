@@ -1,7 +1,7 @@
 package battle
 
 import (
-	assets "github.com/quasilyte/dicewind/assets"
+	"github.com/quasilyte/dicewind/assets"
 	"github.com/quasilyte/dicewind/src/ruleset"
 	"github.com/quasilyte/ge/resource"
 	"github.com/quasilyte/gmath"

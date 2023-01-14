@@ -3,9 +3,10 @@ package encounter
 import (
 	"os"
 
-	assets "github.com/quasilyte/dicewind/assets"
+	"github.com/quasilyte/dicewind/assets"
 	"github.com/quasilyte/dicewind/src/battle"
 	"github.com/quasilyte/dicewind/src/controls"
+	"github.com/quasilyte/dicewind/src/gameui"
 	"github.com/quasilyte/dicewind/src/ruleset"
 	"github.com/quasilyte/dicewind/src/session"
 	"github.com/quasilyte/ge"
@@ -35,7 +36,7 @@ type Controller struct {
 }
 
 type boardNodes struct {
-	tiles [2 * 6]*unitTileNode
+	tiles [2 * 6]*gameui.UnitTile
 }
 
 func NewController(state *session.State) *Controller {
@@ -96,7 +97,7 @@ func (c *Controller) Init(scene *ge.Scene) {
 	c.dice = ruleset.NewDice(scene.Rand(), os.Stdout)
 	c.calc = battle.NewCalculator(c.dice, c.board)
 	c.bot = newBotPlayer(c.calc, c.dice, c.board)
-	c.human = newHumanPlayer(c.state.MainInput, c.calc, c.board)
+	c.human = newHumanPlayer(c.state.MainInput, c.calc, c.board, &c.nodes)
 	c.runner = battle.NewRunner(c.calc, c.dice, c.board)
 	c.eventsRunner = newEventsRunner(c.board, &c.nodes)
 
@@ -112,36 +113,6 @@ func (c *Controller) Init(scene *ge.Scene) {
 	scene.AddObject(c.human)
 	scene.AddObject(c.bot)
 	scene.AddObject(c.eventsRunner)
-
-	// var events []battle.Event
-	// r := battle.NewRunner(dice, board)
-	// stop := false
-	// for {
-	// 	if stop {
-	// 		break
-	// 	}
-	// 	u := r.StartRound()
-	// 	if u == nil {
-	// 		break
-	// 	}
-	// 	for {
-	// 		actions := c.bot.GetActions(u)
-	// 		u, events = r.ApplyActions(actions)
-	// 		for _, e := range events {
-	// 			// fmt.Println(">", e.Name())
-	// 			_, ok := e.(*battle.VictoryEvent)
-	// 			if ok {
-	// 				stop = true
-	// 				break
-	// 			}
-	// 		}
-	// 		if u == nil {
-	// 			break
-	// 		}
-	// 	}
-	// }
-
-	// os.Exit(0)
 }
 
 func (c *Controller) Update(delta float64) {
@@ -208,7 +179,7 @@ func (c *Controller) updateUnitTiles() {
 	c.board.WalkTiles(func(t *battle.Tile) bool {
 		c.nodes.tiles[t.TilePos.GlobalIndex()].SetUnit(t.Unit)
 		if t.Unit != nil {
-			t.Unit.Pos = c.nodes.tiles[t.TilePos.GlobalIndex()].body.Pos
+			t.Unit.Pos = c.nodes.tiles[t.TilePos.GlobalIndex()].GetPos()
 		}
 		return true
 	})
@@ -221,10 +192,10 @@ func (c *Controller) initUI() {
 
 	c.board.WalkTiles(func(t *battle.Tile) bool {
 		offset := c.calcUnitPos(t.TilePos)
-		n := newUnitTileNode(offset, t.TilePos)
+		n := gameui.NewUnitTile(offset, t.TilePos)
 		c.scene.AddObject(n)
 		c.nodes.tiles[t.TilePos.GlobalIndex()] = n
-		c.board.Tiles[t.TilePos.GlobalIndex()].Pos = n.body.Pos
+		c.board.Tiles[t.TilePos.GlobalIndex()].Pos = offset
 		return true
 	})
 

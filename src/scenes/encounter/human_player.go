@@ -3,6 +3,7 @@ package encounter
 import (
 	"github.com/quasilyte/dicewind/src/battle"
 	"github.com/quasilyte/dicewind/src/controls"
+	"github.com/quasilyte/dicewind/src/gameui"
 	"github.com/quasilyte/dicewind/src/ruleset"
 	"github.com/quasilyte/ge"
 	"github.com/quasilyte/ge/gesignal"
@@ -16,8 +17,8 @@ type humanPlayer struct {
 
 	calc  *battle.Calculator
 	board *battle.Board
+	nodes *boardNodes
 
-	tileSelections [2 * 6]*tileSelectionAuraNode
 	skillSlots     []*skillSlotNode
 	skillTargeting int
 	skillSelection *selectionAuraNode
@@ -30,23 +31,17 @@ type humanPlayer struct {
 	EventActionsReady gesignal.Event[tuple.Value2[*battle.Unit, []ruleset.Action]]
 }
 
-func newHumanPlayer(h *input.Handler, calc *battle.Calculator, board *battle.Board) *humanPlayer {
+func newHumanPlayer(h *input.Handler, calc *battle.Calculator, board *battle.Board, nodes *boardNodes) *humanPlayer {
 	return &humanPlayer{
 		input:          h,
 		calc:           calc,
 		board:          board,
+		nodes:          nodes,
 		skillTargeting: -1,
 	}
 }
 
 func (p *humanPlayer) Init(scene *ge.Scene) {
-	p.board.WalkTiles(func(t *battle.Tile) bool {
-		a := newTileSelectionAuraNode(t.TilePos, t.Pos)
-		p.tileSelections[t.TilePos.GlobalIndex()] = a
-		scene.AddObjectBelow(a, 1)
-		return true
-	})
-
 	p.skillSelection = newSelectionAuraNode()
 	scene.AddObjectAbove(p.skillSelection, 1)
 
@@ -87,20 +82,20 @@ func (p *humanPlayer) handleInput() {
 		return
 	}
 
-	for _, tile := range p.tileSelections {
-		if tile.Action == ruleset.ActionNone {
+	for _, tile := range p.nodes.tiles {
+		if tile.GetAction() == ruleset.ActionNone {
 			continue
 		}
-		if !tile.Rect.Contains(cursorPos) {
+		if !tile.ContainsPos(cursorPos) {
 			continue
 		}
 
-		a := ruleset.Action{Kind: tile.Action}
-		switch tile.Action {
+		a := ruleset.Action{Kind: tile.GetAction()}
+		switch tile.GetAction() {
 		case ruleset.ActionMove, ruleset.ActionAttack:
-			a.Pos = tile.TilePos
+			a.Pos = tile.GetTilePos()
 		case ruleset.ActionSkill:
-			a.Pos = tile.TilePos
+			a.Pos = tile.GetTilePos()
 			a.SubKind = p.skillTargeting
 		case ruleset.ActionGuard:
 			// Do nothing.
@@ -123,8 +118,8 @@ func (p *humanPlayer) sendActions() {
 
 	p.skillSelection.SetVisibility(false)
 
-	for _, tile := range p.tileSelections {
-		tile.SetVisibility(false)
+	for _, tile := range p.nodes.tiles {
+		tile.SetAction(ruleset.ActionNone)
 	}
 
 	for _, slot := range p.skillSlots {
@@ -158,9 +153,8 @@ func (p *humanPlayer) updateTiles() {
 		p.skillSelection.Pos = p.skillSlots[p.skillTargeting].pos
 	}
 
-	for _, tile := range p.tileSelections {
-		tile.SetVisibility(false)
-		tile.Action = ruleset.ActionNone
+	for _, tile := range p.nodes.tiles {
+		tile.SetAction(ruleset.ActionNone)
 		if p.skillTargeting == -1 {
 			p.updateNormalTile(tile)
 		} else {
@@ -169,8 +163,8 @@ func (p *humanPlayer) updateTiles() {
 	}
 }
 
-func (p *humanPlayer) updateSkillTile(tile *tileSelectionAuraNode) {
-	pos := tile.TilePos
+func (p *humanPlayer) updateSkillTile(tile *gameui.UnitTile) {
+	pos := tile.GetTilePos()
 	skill := p.skillSlots[p.skillTargeting].Skill
 	ok := (skill.CanTargetAlliedTile() && p.unit.Alliance == pos.Alliance) ||
 		(skill.CanTargetEnemyTile() && p.unit.Alliance != pos.Alliance) ||
@@ -179,26 +173,22 @@ func (p *humanPlayer) updateSkillTile(tile *tileSelectionAuraNode) {
 		return
 	}
 	if p.calc.CanCastThere(p.unit, skill, p.unit.TilePos, pos) {
-		tile.SetVisibility(true)
 		tile.SetAction(ruleset.ActionSkill)
 	}
 }
 
-func (p *humanPlayer) updateNormalTile(tile *tileSelectionAuraNode) {
-	pos := tile.TilePos
+func (p *humanPlayer) updateNormalTile(tile *gameui.UnitTile) {
+	pos := tile.GetTilePos()
 	u := p.unit
 	if pos.Alliance == u.Alliance {
 		if p.board.Tiles[pos.GlobalIndex()].Unit == nil {
-			tile.SetVisibility(true)
 			tile.SetAction(ruleset.ActionMove)
 		} else if pos == u.TilePos {
-			tile.SetVisibility(true)
 			tile.SetAction(ruleset.ActionGuard)
 		}
 		return
 	}
 	if p.board.Tiles[pos.GlobalIndex()].Unit != nil && p.calc.CanAttackPos(u, u.TilePos, pos) {
-		tile.SetVisibility(true)
 		tile.SetAction(ruleset.ActionAttack)
 	}
 }

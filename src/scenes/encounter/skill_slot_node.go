@@ -1,7 +1,7 @@
 package encounter
 
 import (
-	assets "github.com/quasilyte/dicewind/assets"
+	"github.com/quasilyte/dicewind/assets"
 	"github.com/quasilyte/dicewind/src/ruleset"
 	"github.com/quasilyte/ge"
 	"github.com/quasilyte/gmath"

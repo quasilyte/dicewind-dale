@@ -3,6 +3,8 @@ package ruleset
 type Module struct {
 	Name string
 
+	Challenges []RoomChallenge
+
 	Rooms []RoomSchema
 }
 
@@ -18,12 +20,28 @@ type Room struct {
 	Info RoomSchema
 }
 
+type RoomTrigger struct {
+	Name string
+
+	Challenges []*RoomChallenge
+}
+
+type RoomChallenge struct {
+	Name string
+
+	Kind RoomChallengeKind
+
+	Value int
+}
+
 type RoomSchema struct {
 	Name string
 
-	MaxVisits int
+	SingleVisit bool
 
 	Danger int
+
+	Triggers [6]RoomTrigger
 
 	Rewards [6][]RoomReward
 }
@@ -36,12 +54,23 @@ type RoomReward struct {
 	Scope RoomRewardScope
 }
 
+type RoomChallengeKind int
+
+const (
+	ChallengeUnknown RoomChallengeKind = iota
+	ChallengeTrap
+	ChallengePickableLock
+)
+
 type RoomRewardKind int
 
 const (
 	RewardUnknown RoomRewardKind = iota
 	RewardPickSkill
 	RewardPickPotion
+	RewardPickLoot
+	RewardRestoreHealth
+	RewardRestoreEnergy
 )
 
 type RoomRewardScope int
@@ -49,5 +78,6 @@ type RoomRewardScope int
 const (
 	RewardScopeUnknown RoomRewardScope = iota
 	RewardScopeEveryPartyMember
+	RewardScopeSelectedPartyMember
 	RewardScopeShared
 )
