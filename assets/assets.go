@@ -20,6 +20,7 @@ func Register(ctx *ge.Context) {
 	registerFonts(ctx)
 	registerAudio(ctx)
 	registerShaders(ctx)
+	registerRaws(ctx)
 }
 
 //go:embed all:_data

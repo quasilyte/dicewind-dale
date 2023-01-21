@@ -24,6 +24,7 @@ func registerImages(ctx *ge.Context) {
 
 		ImageBruteCard: {Path: "image/unit/brute_card.png"},
 
+		ImageRoomBorder:        {Path: "image/room_border.png"},
 		ImageUnitBorder:        {Path: "image/unit_border.png"},
 		ImageUnitCardBg:        {Path: "image/unit_card_bg.png"},
 		ImageSelectionAura:     {Path: "image/selection_aura.png"},
@@ -45,6 +46,10 @@ func registerImages(ctx *ge.Context) {
 		ImageSpearAttack:    {Path: "image/spear_attack.png", FrameWidth: 96},
 		ImageClawAttack:     {Path: "image/claw_attack.png", FrameWidth: 96},
 
+		ImageCryphBg:     {Path: "image/dungeon/crypt_bg.png"},
+		ImageCryptRoomBg: {Path: "image/dungeon/crypt_room_bg.png"},
+
+		ImagePaperBg:     {Path: "image/paper_bg.png"},
 		ImageEncounterBg: {Path: "image/encounter_bg.png"},
 		ImagePoisonToken: {Path: "image/poison_token.png"},
 		ImageHealthLevel: {Path: "image/health_level.png"},
@@ -89,6 +94,10 @@ const (
 
 	ImageBruteCard
 
+	ImageCryphBg
+	ImageCryptRoomBg
+
+	ImageRoomBorder
 	ImageUnitBorder
 	ImageUnitCardBg
 	ImageSelectionAura
@@ -110,6 +119,7 @@ const (
 	ImageScimitarAttack
 	ImageClawAttack
 
+	ImagePaperBg
 	ImageEncounterBg
 	ImagePoisonToken
 	ImageHealthLevel

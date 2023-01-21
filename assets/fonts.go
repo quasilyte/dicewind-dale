@@ -7,9 +7,9 @@ import (
 
 func registerFonts(ctx *ge.Context) {
 	fontResources := map[resource.FontID]resource.Font{
-		FontVeryTiny: {Path: "font/Fiolex_Mephisto.otf", Size: 13},
-		FontTiny:     {Path: "font/Fiolex_Mephisto.otf", Size: 18},
-		FontSmall:    {Path: "font/Fiolex_Mephisto.otf", Size: 24},
+		// FontVeryTiny: {Path: "font/gondola.ttf", Size: 16},
+		FontTiny:  {Path: "font/gondola.ttf", Size: 16},
+		FontSmall: {Path: "font/gondola.ttf", Size: 22},
 	}
 	for id, res := range fontResources {
 		ctx.Loader.FontRegistry.Set(id, res)
