@@ -22,8 +22,7 @@ type UnitTile struct {
 
 	unit *battle.Unit
 
-	label       *ge.Label
-	labelShadow *ge.Label
+	nameLabel *LabelWithShadow
 
 	bg         *ge.Sprite
 	sprite     *ge.Sprite
@@ -67,25 +66,15 @@ func (tile *UnitTile) Init(scene *ge.Scene) {
 	tile.sprite.Shader.Enabled = false
 	scene.AddGraphics(tile.sprite)
 
-	tile.label = scene.NewLabel(assets.FontTiny)
-	tile.label.Visible = false
-	tile.label.Pos.Base = &tile.body.Pos
-	tile.label.Pos.Offset.X = (-256 / 2) + 8
-	tile.label.Pos.Offset.Y = 48
-	tile.label.AlignHorizontal = ge.AlignHorizontalRight
-	tile.label.Width = 256 - 32
-
-	tile.labelShadow = scene.NewLabel(assets.FontTiny)
-	tile.labelShadow.Visible = false
-	tile.labelShadow.Pos = tile.label.Pos
-	tile.labelShadow.AlignHorizontal = ge.AlignHorizontalRight
-	tile.labelShadow.Width = 256 - 32
-	tile.labelShadow.Pos.Offset.Y += 1
-	tile.labelShadow.Pos.Offset.X += 1
-	tile.labelShadow.ColorScale.SetRGBA(0, 0, 0, 0xff)
-
-	scene.AddGraphics(tile.labelShadow)
-	scene.AddGraphics(tile.label)
+	tile.nameLabel = NewLabelWithShadow(LabelWithShadowConfig{
+		Pos: ge.Pos{
+			Base:   &tile.body.Pos,
+			Offset: gmath.Vec{X: (-288 / 2) + 4, Y: 56},
+		},
+		Font:  assets.FontTiny,
+		Width: 288 - 32,
+	})
+	scene.AddObject(tile.nameLabel)
 
 	tile.auraSprite = scene.NewSprite(assets.ImageTileSelectionAura)
 	tile.auraSprite.Pos.Base = &tile.body.Pos
@@ -98,13 +87,13 @@ func (tile *UnitTile) Init(scene *ge.Scene) {
 
 	tile.hpLevel = scene.NewSprite(assets.ImageHealthLevel)
 	tile.hpLevel.Pos.Base = &tile.body.Pos
-	tile.hpLevel.Pos.Offset = gmath.Vec{X: -117}
+	tile.hpLevel.Pos.Offset = gmath.Vec{X: -133}
 	tile.hpLevel.Visible = false
 	scene.AddGraphics(tile.hpLevel)
 
 	tile.mpLevel = scene.NewSprite(assets.ImageEnergyLevel)
 	tile.mpLevel.Pos.Base = &tile.body.Pos
-	tile.mpLevel.Pos.Offset = gmath.Vec{X: 116}
+	tile.mpLevel.Pos.Offset = gmath.Vec{X: 132}
 	tile.mpLevel.Visible = false
 	scene.AddGraphics(tile.mpLevel)
 
@@ -173,8 +162,7 @@ func (tile *UnitTile) PlayUnitDefeat() {
 
 func (tile *UnitTile) setUnitVisibility(v bool) {
 	tile.sprite.Visible = v
-	tile.label.Visible = v
-	tile.labelShadow.Visible = v
+	tile.nameLabel.Visible = v
 	tile.hpLevel.Visible = v
 	tile.mpLevel.Visible = v
 	for i, token := range tile.poisonTokens {
@@ -227,11 +215,36 @@ func (tile *UnitTile) SetUnit(u *battle.Unit) {
 
 	if u != nil {
 		tile.sprite.SetImage(tile.scene.LoadImage(u.CardImage()))
-		tile.label.Text = u.Name()
-		tile.labelShadow.Text = u.Name()
+		tile.nameLabel.Text = u.Name()
 		tile.setUnitVisibility(true)
 		tile.updateUnit()
 	} else {
 		tile.setUnitVisibility(false)
 	}
+}
+
+func CalcUnitTilePos(pos ruleset.TilePos) gmath.Vec {
+	col := float64(pos.Index)
+	row := 0.0
+	if pos.IsBackRow() {
+		col -= 3
+		if pos.Alliance == 1 {
+			row = 1
+		}
+	} else {
+		if pos.Alliance == 0 {
+			row = 1
+		}
+	}
+	extraOffset := gmath.Vec{}
+	if pos.Alliance == 1 {
+		extraOffset.Y = (456 + 16) + (col * 32)
+	} else {
+		extraOffset.Y = -(col * 32)
+	}
+	offset := gmath.Vec{
+		X: 208 + (col * (320 + 32)),
+		Y: 190 + (row * (196 + 32)),
+	}
+	return offset.Add(extraOffset)
 }

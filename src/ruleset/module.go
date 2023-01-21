@@ -3,6 +3,8 @@ package ruleset
 type Module struct {
 	Name string
 
+	MaxDanger int
+
 	Challenges []RoomChallenge
 
 	Rooms []RoomSchema
@@ -11,11 +13,12 @@ type Module struct {
 type DungeonLevel struct {
 	RoomsCleared int
 
-	RoomDeck []*Room
+	RoomDeck        []*Room
+	VisitedRoomDeck []*Room
 }
 
 type Room struct {
-	NumVisits int
+	Module *Module
 
 	Info RoomSchema
 }

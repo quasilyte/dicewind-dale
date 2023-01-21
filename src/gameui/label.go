@@ -48,7 +48,7 @@ func (l *Label) Init(scene *ge.Scene) {
 	l.label.AlignVertical = ge.AlignVerticalCenter
 	l.label.Width = l.bg.Width
 	l.label.Height = l.bg.Height
-	l.label.Pos = l.bg.AnchorPos().WithOffset(0, -4)
+	l.label.Pos = l.bg.AnchorPos()
 	l.label.Text = l.LabelText
 	scene.AddGraphics(l.label)
 }
@@ -72,6 +72,6 @@ func (l *Label) SetBgColor(c color.RGBA) {
 
 func (l *Label) Update(delta float64) {
 	l.bg.Pos = l.Pos
-	l.label.Pos = l.bg.AnchorPos().WithOffset(0, -4)
+	l.label.Pos = l.bg.AnchorPos()
 	l.label.Text = l.LabelText
 }

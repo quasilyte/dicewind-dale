@@ -26,6 +26,8 @@ type Controller struct {
 
 	selection *selectionAuraNode
 
+	infoScroll *gameui.InfoScroll
+
 	human    *humanPlayer
 	bot      *botPlayer
 	nextUnit *battle.Unit
@@ -45,6 +47,9 @@ func NewController(state *session.State) *Controller {
 
 func (c *Controller) Init(scene *ge.Scene) {
 	c.scene = scene
+
+	c.infoScroll = gameui.NewInfoScroll(gmath.Vec{X: 1104, Y: 28})
+	c.scene.AddObject(c.infoScroll)
 
 	warriorHero := &ruleset.Hero{
 		Name:      "Alpha",
@@ -86,8 +91,8 @@ func (c *Controller) Init(scene *ge.Scene) {
 
 	c.board = battle.NewBoard()
 
-	c.board.AddUnit(battle.NewHeroUnit(0, sorcHero), ruleset.TilePos{Alliance: 0, Index: 0})
-	c.board.AddUnit(battle.NewHeroUnit(0, warriorHero), ruleset.TilePos{Alliance: 0, Index: 4})
+	c.board.AddUnit(battle.NewHeroUnit(0, sorcHero), ruleset.TilePos{Alliance: 0, Index: 4})
+	c.board.AddUnit(battle.NewHeroUnit(0, warriorHero), ruleset.TilePos{Alliance: 0, Index: 0})
 
 	c.board.AddUnit(battle.NewMonsterUnit(1, ruleset.MonsterByName("Grey Minion Archer")), ruleset.TilePos{Alliance: 1, Index: 3})
 	c.board.AddUnit(battle.NewMonsterUnit(1, ruleset.MonsterByName("Darkspawn")), ruleset.TilePos{Alliance: 1, Index: 1})
@@ -186,12 +191,16 @@ func (c *Controller) updateUnitTiles() {
 }
 
 func (c *Controller) initUI() {
-	bg := c.scene.NewSprite(assets.ImageEncounterBg)
+	// bg := c.scene.NewSprite(assets.ImageEncounterBg)
+	// bg.Centered = false
+	// c.scene.AddGraphicsBelow(bg, 1)
+	ctx := c.scene.Context()
+	bg := c.scene.NewRepeatedSprite(assets.ImageCryphBg, ctx.WindowWidth, ctx.WindowHeight)
 	bg.Centered = false
 	c.scene.AddGraphicsBelow(bg, 1)
 
 	c.board.WalkTiles(func(t *battle.Tile) bool {
-		offset := c.calcUnitPos(t.TilePos)
+		offset := gameui.CalcUnitTilePos(t.TilePos)
 		n := gameui.NewUnitTile(offset, t.TilePos)
 		c.scene.AddObject(n)
 		c.nodes.tiles[t.TilePos.GlobalIndex()] = n
@@ -200,30 +209,4 @@ func (c *Controller) initUI() {
 	})
 
 	c.updateUnitTiles()
-}
-
-func (c *Controller) calcUnitPos(pos ruleset.TilePos) gmath.Vec {
-	col := float64(pos.Index)
-	row := 0.0
-	if pos.IsBackRow() {
-		col -= 3
-		if pos.Alliance == 1 {
-			row = 1
-		}
-	} else {
-		if pos.Alliance == 0 {
-			row = 1
-		}
-	}
-	extraOffset := gmath.Vec{}
-	if pos.Alliance == 1 {
-		extraOffset.Y = (456 + 16) + (col * 32)
-	} else {
-		extraOffset.Y = -(col * 32)
-	}
-	offset := gmath.Vec{
-		X: 208 + (col * (320 + 32)),
-		Y: 190 + (row * (196 + 32)),
-	}
-	return offset.Add(extraOffset)
 }

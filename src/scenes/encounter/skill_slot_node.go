@@ -2,6 +2,7 @@ package encounter
 
 import (
 	"github.com/quasilyte/dicewind/assets"
+	"github.com/quasilyte/dicewind/src/gameui"
 	"github.com/quasilyte/dicewind/src/ruleset"
 	"github.com/quasilyte/ge"
 	"github.com/quasilyte/gmath"
@@ -12,11 +13,12 @@ type skillSlotNode struct {
 
 	pos gmath.Vec
 
+	key string
+
 	border *ge.Sprite
 	sprite *ge.Sprite
 
-	label       *ge.Label
-	labelShadow *ge.Label
+	label *gameui.LabelWithShadow
 
 	healthCost []*ge.Sprite
 	energyCost []*ge.Sprite
@@ -26,8 +28,11 @@ type skillSlotNode struct {
 	Rect     gmath.Rect
 }
 
-func newSkillSlotNode(pos gmath.Vec) *skillSlotNode {
-	return &skillSlotNode{pos: pos}
+func newSkillSlotNode(key string, pos gmath.Vec) *skillSlotNode {
+	return &skillSlotNode{
+		pos: pos,
+		key: key,
+	}
 }
 
 func (s *skillSlotNode) Init(scene *ge.Scene) {
@@ -38,25 +43,17 @@ func (s *skillSlotNode) Init(scene *ge.Scene) {
 	s.sprite.Visible = false
 	scene.AddGraphics(s.sprite)
 
-	s.label = scene.NewLabel(assets.FontVeryTiny)
-	s.label.Pos.Base = &s.pos
-	s.label.Pos.Offset.X = (-160 / 2) + 8
-	s.label.Pos.Offset.Y = 48
-	s.label.AlignHorizontal = ge.AlignHorizontalRight
+	s.label = gameui.NewLabelWithShadow(gameui.LabelWithShadowConfig{
+		Pos: ge.Pos{
+			Base:   &s.pos,
+			Offset: gmath.Vec{X: (-160 / 2) + 4, Y: 38},
+		},
+		Width: 160 - 28,
+		Font:  assets.FontSmall,
+	})
+	s.label.Text = s.key
 	s.label.Visible = false
-	s.label.Width = 160 - 28
-
-	s.labelShadow = scene.NewLabel(assets.FontVeryTiny)
-	s.labelShadow.Pos = s.label.Pos
-	s.labelShadow.Pos.Offset.Y += 1
-	s.labelShadow.Pos.Offset.X += 1
-	s.labelShadow.AlignHorizontal = ge.AlignHorizontalRight
-	s.labelShadow.Visible = false
-	s.labelShadow.Width = s.label.Width
-	s.labelShadow.ColorScale.SetRGBA(0, 0, 0, 0xff)
-
-	scene.AddGraphics(s.labelShadow)
-	scene.AddGraphics(s.label)
+	scene.AddObject(s.label)
 
 	s.border = scene.NewSprite(assets.ImageSkillBorder)
 	s.border.Visible = false
@@ -101,9 +98,9 @@ func (s *skillSlotNode) SetDisabled(disabled bool) {
 	}
 	s.Disabled = disabled
 	if disabled {
-		s.label.ColorScale.SetColor(ge.RGB(0xe11d51))
+		s.label.SetColor(ge.RGB(0xe11d51))
 	} else {
-		s.label.ColorScale.SetColor(ge.RGB(0xffffff))
+		s.label.SetColor(ge.RGB(0xffffff))
 	}
 }
 
@@ -112,15 +109,12 @@ func (s *skillSlotNode) SetSkill(skill *ruleset.Skill) {
 
 	if skill != nil {
 		s.sprite.SetImage(s.scene.LoadImage(skill.Icon))
-		s.label.Text = skill.Name
-		s.labelShadow.Text = skill.Name
 	}
 
 	visible := skill != nil
 	s.border.Visible = visible
 	s.sprite.Visible = visible
 	s.label.Visible = visible
-	s.labelShadow.Visible = visible
 
 	for i, sprite := range s.energyCost {
 		sprite.Visible = skill != nil && i < skill.EnergyCost

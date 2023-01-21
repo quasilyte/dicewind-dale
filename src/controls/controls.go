@@ -12,6 +12,11 @@ const (
 	ActionDebug
 
 	ActionConfirm
+
+	ActionSkill1
+	ActionSkill2
+	ActionSkill3
+	ActionSkill4
 )
 
 func BindKeymap(ctx *ge.Context, state *session.State) {
@@ -19,6 +24,11 @@ func BindKeymap(ctx *ge.Context, state *session.State) {
 		ActionDebug: {input.KeySpace},
 
 		ActionConfirm: {input.KeyMouseLeft},
+
+		ActionSkill1: {input.KeyQ},
+		ActionSkill2: {input.KeyW},
+		ActionSkill3: {input.KeyE},
+		ActionSkill4: {input.KeyR},
 	}
 
 	state.MainInput = ctx.Input.NewHandler(0, keymap)

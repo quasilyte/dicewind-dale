@@ -26,18 +26,18 @@ func newDamageScoreNode(damage int, pos ge.Pos, c color.RGBA) *damageScoreNode {
 }
 
 func (s *damageScoreNode) Init(scene *ge.Scene) {
-	s.bg = ge.NewRect(scene.Context(), 64, 32)
+	s.bg = ge.NewRect(scene.Context(), 64, 36)
 	s.bg.Pos = s.pos
 	s.bg.FillColorScale.SetRGBA(0x10, 0x10, 0x10, 0xaa)
 	scene.AddGraphics(s.bg)
 
-	s.label = scene.NewLabel(assets.FontSmall)
+	s.label = scene.NewLabel(assets.FontTiny)
 	s.label.Text = strconv.Itoa(s.damage)
 	s.label.AlignHorizontal = ge.AlignHorizontalCenter
 	s.label.AlignVertical = ge.AlignVerticalCenter
 	s.label.Width = s.bg.Width
 	s.label.Height = s.bg.Height
-	s.label.Pos = s.bg.AnchorPos().WithOffset(0, -4)
+	s.label.Pos = s.bg.AnchorPos()
 	if s.damage != 0 {
 		s.label.ColorScale.SetColor(s.textColor)
 	}

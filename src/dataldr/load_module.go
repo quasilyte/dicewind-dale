@@ -10,10 +10,11 @@ import (
 
 	"github.com/quasilyte/dicewind/src/jsonconfig"
 	"github.com/quasilyte/dicewind/src/ruleset"
+	"github.com/quasilyte/ge/langs"
 	"github.com/quasilyte/ge/xslices"
 )
 
-func LoadModule(moduleRoot string) (*ruleset.Module, error) {
+func LoadModule(dict *langs.Dictionary, moduleRoot string) (*ruleset.Module, error) {
 	if _, err := os.Stat(moduleRoot); err != nil {
 		return nil, err
 	}
@@ -25,6 +26,7 @@ func LoadModule(moduleRoot string) (*ruleset.Module, error) {
 		return nil, err
 	}
 	module.Name = metadata.Name
+	module.MaxDanger = metadata.MaxDanger
 
 	challenges, err := loadModuleChallenges(moduleRoot)
 	if err != nil {
@@ -38,11 +40,17 @@ func LoadModule(moduleRoot string) (*ruleset.Module, error) {
 	}
 	module.Rooms = rooms
 
+	if err := loadModuleLangs(dict, module.Name, moduleRoot); err != nil {
+		return nil, err
+	}
+
 	return &module, nil
 }
 
 type moduleMetadata struct {
 	Name string `json:"name"`
+
+	MaxDanger int `json:"max_danger"`
 }
 
 func loadModuleMetadata(moduleRoot string) (*moduleMetadata, error) {
@@ -270,4 +278,41 @@ func parseRollRange(s string) ([]int, error) {
 		values = append(values, v)
 	}
 	return values, nil
+}
+
+func loadModuleLangs(dict *langs.Dictionary, moduleName, moduleRoot string) error {
+	files, err := os.ReadDir(filepath.Join(moduleRoot, "langs"))
+	if err != nil {
+		return err
+	}
+
+	var fallbackDictPath string
+	var dictPath string
+	for _, f := range files {
+		if !strings.HasSuffix(f.Name(), ".txt") {
+			continue
+		}
+		langCode := strings.TrimSuffix(f.Name(), ".txt")
+		if langCode == "en" {
+			fallbackDictPath = filepath.Join(moduleRoot, "langs", f.Name())
+		}
+		if langCode == dict.Name {
+			dictPath = filepath.Join(moduleRoot, "langs", f.Name())
+			break
+		}
+	}
+
+	if dictPath == "" {
+		dictPath = fallbackDictPath
+	}
+	if dictPath == "" {
+		return fmt.Errorf("%s lang not found, the fallback en.txt is missing too", dict.Name)
+	}
+
+	data, err := os.ReadFile(dictPath)
+	if err != nil {
+		return err
+	}
+
+	return dict.Load(moduleName, data)
 }

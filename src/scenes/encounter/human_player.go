@@ -1,6 +1,8 @@
 package encounter
 
 import (
+	"strings"
+
 	"github.com/quasilyte/dicewind/src/battle"
 	"github.com/quasilyte/dicewind/src/controls"
 	"github.com/quasilyte/dicewind/src/gameui"
@@ -45,10 +47,17 @@ func (p *humanPlayer) Init(scene *ge.Scene) {
 	p.skillSelection = newSelectionAuraNode()
 	scene.AddObjectAbove(p.skillSelection, 1)
 
+	keys := []string{
+		p.input.ActionKeyNames(controls.ActionSkill1, input.KeyboardInput)[0],
+		p.input.ActionKeyNames(controls.ActionSkill2, input.KeyboardInput)[0],
+		p.input.ActionKeyNames(controls.ActionSkill3, input.KeyboardInput)[0],
+		p.input.ActionKeyNames(controls.ActionSkill4, input.KeyboardInput)[0],
+	}
+
 	p.skillSlots = make([]*skillSlotNode, 4)
 	pos := gmath.Vec{X: 1232, Y: 600}
 	for i := range p.skillSlots {
-		slot := newSkillSlotNode(pos)
+		slot := newSkillSlotNode(strings.ToUpper(keys[i]), pos)
 		p.skillSlots[i] = slot
 		scene.AddObject(slot)
 		pos = pos.Add(gmath.Vec{X: 160 + 8})
