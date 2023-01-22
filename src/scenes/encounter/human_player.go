@@ -66,7 +66,31 @@ func (p *humanPlayer) Init(scene *ge.Scene) {
 
 func (p *humanPlayer) IsDisposed() bool { return false }
 
+func (p *humanPlayer) Update(delta float64) {
+	if !p.active {
+		return
+	}
+	p.handleInput()
+}
+
 func (p *humanPlayer) handleInput() {
+	skillActions := [...]input.Action{
+		controls.ActionSkill1,
+		controls.ActionSkill2,
+		controls.ActionSkill3,
+		controls.ActionSkill4,
+	}
+	for i, a := range &skillActions {
+		slot := p.skillSlots[i]
+		if slot.Skill == nil || slot.Disabled {
+			continue
+		}
+		if p.input.ActionIsJustPressed(a) {
+			p.activateSkill(i)
+			return
+		}
+	}
+
 	info, ok := p.input.JustPressedActionInfo(controls.ActionConfirm)
 	if !ok || !info.HasPos() {
 		return
@@ -81,13 +105,7 @@ func (p *humanPlayer) handleInput() {
 		if !slot.Rect.Contains(cursorPos) {
 			continue
 		}
-		if p.skillTargeting == i {
-			p.skillTargeting = -1
-			p.updateTiles()
-			continue
-		}
-		p.skillTargeting = i
-		p.updateTiles()
+		p.activateSkill(i)
 		return
 	}
 
@@ -115,11 +133,14 @@ func (p *humanPlayer) handleInput() {
 	}
 }
 
-func (p *humanPlayer) Update(delta float64) {
-	if !p.active {
+func (p *humanPlayer) activateSkill(i int) {
+	if p.skillTargeting == i {
+		p.skillTargeting = -1
+		p.updateTiles()
 		return
 	}
-	p.handleInput()
+	p.skillTargeting = i
+	p.updateTiles()
 }
 
 func (p *humanPlayer) sendActions() {
